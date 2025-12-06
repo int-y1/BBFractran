@@ -6,7 +6,7 @@
 using namespace std;
 typedef long long ll;
 
-const int LIM=40; // max sz to enumerate
+const int LIM=19; // max sz to enumerate
 vector<mpz_class> primes;
 
 string program_str(const vector<mpz_class>& fracs) {

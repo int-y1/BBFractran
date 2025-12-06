@@ -4,7 +4,7 @@
 
 Currently, only Windows is supported. Sorry, Linux users.
 
-This command will build and run the program.
+First, install gmp. Then this command will build and run the program.
 
 ```
 ./ac fractran20251107
