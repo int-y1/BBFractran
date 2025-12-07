@@ -38,7 +38,7 @@ The 3 holdouts were proved non-halting manually: [holdout 1](https://discord.com
 
 ## Size 21
 
-* `sz21_9427.txt` (Nov 16, 2025): Direct output from `fractran20251117`. This enumeration attempt also produced `sz19_48.txt` and `sz20_902.txt`.
+* `sz21_9427.txt` (Nov 16, 2025): Direct output from `fractran20251116`. This enumeration attempt also produced `sz19_48.txt` and `sz20_902.txt`.
 * `sz21_783.txt` (Nov 16, 2025): After applying the "Spanning Vectors" and "Power Difference Limit Mod" decider. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1439725735211303003)
 * `sz21_760.txt` (Nov 16, 2025): After running all machines to 10^11 steps ([link 1](https://discord.com/channels/960643023006490684/1438019511155691521/1439759182587891894), [link 2](https://discord.com/channels/960643023006490684/1438019511155691521/1440851396864905241)). 3 machines took 31957632 steps to halt, and this was the record.
 * `sz21_587.txt` (Nov 25, 2025): Convert to [Petri net](https://en.wikipedia.org/wiki/Petri_net), apply [FAST](https://lsv.ens-paris-saclay.fr/Software/fast/), and remove those that are infinite (i.e. non-halting). [link](https://discord.com/channels/960643023006490684/1438019511155691521/1442928279995809882)
@@ -47,4 +47,4 @@ The 3 holdouts were proved non-halting manually: [holdout 1](https://discord.com
 
 ## Size 22
 
-Might take 11 days to create. TODO, run `fractran20251117` on a stronger computer.
+Might take 11 days to enumerate. TODO, run `fractran20251116` on a stronger computer.
