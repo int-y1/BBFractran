@@ -34,7 +34,7 @@ The 3 holdouts were proved non-halting manually: [holdout 1](https://discord.com
 * `sz20_34.txt` (Nov 14, 2025): After applying the "Power Difference Limit Mod" decider. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1438996636389998773)
 * `sz20_29.txt` (Dec 6, 2025): Convert to [Petri net](https://en.wikipedia.org/wiki/Petri_net), apply [FAST](https://lsv.ens-paris-saclay.fr/Software/fast/), and remove those that are infinite (i.e. non-halting). [link](https://discord.com/channels/960643023006490684/1438019511155691521/1447069110541484146)
 
-34 holdouts remain.
+29 holdouts remain.
 
 ## Size 21
 
@@ -47,4 +47,4 @@ The 3 holdouts were proved non-halting manually: [holdout 1](https://discord.com
 
 ## Size 22
 
-Might take 11 days to enumerate. TODO, run `fractran20251116` on a stronger computer.
+Might take 2 days to enumerate. TODO, run `fractran20251116`.
