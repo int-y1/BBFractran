@@ -47,4 +47,12 @@ The 3 holdouts were proved non-halting manually: [holdout 1](https://discord.com
 
 ## Size 22
 
-Might take 2 days to enumerate. TODO, run `fractran20251116`.
+* `sz22_91123.txt` (Dec 9, 2025): Direct output from `fractran20251116`.
+
+91123 holdouts remain. TODO: run "Spanning Vectors", run "Power Difference Limit Mod", run all machines to 10^10 steps.
+
+## Size 23
+
+Not needed yet. Size 22 still needs to be explored further.
+
+Benchmark info for `fractran20251116` on my laptop: sz19 in 895s, sz20 in 4880s, sz21 in 30343s, sz22 in 172468s. sz23 might take 12 days.
