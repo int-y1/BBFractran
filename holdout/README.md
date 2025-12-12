@@ -4,6 +4,12 @@
 
 Each holdouts list is stored in a file called `sz(x)_(y).txt`, where `(x)` is the program size and `(y)` is the number of holdouts.
 
+## Errata
+
+* Dec 11, 2025: `sz21_783.txt` is incorrect. See `sz21_798.txt` for the correct version.
+* Dec 11, 2025: `sz21_760.txt` is incorrect. See `sz21_775.txt` for the correct version.
+* Dec 11, 2025: `sz21_587.txt` is incorrect. See `sz21_602.txt` for the correct version.
+
 ## Size 17
 
 * `sz17_162.txt` (Oct 31, 2025): From an early enumeration attempt.
@@ -39,9 +45,9 @@ The 3 holdouts were proved non-halting manually: [holdout 1](https://discord.com
 ## Size 21
 
 * `sz21_9427.txt` (Nov 16, 2025): Direct output from `fractran20251116`. This enumeration attempt also produced `sz19_48.txt` and `sz20_902.txt`.
-* `sz21_783.txt` (Nov 16, 2025): After applying the "Spanning Vectors" and "Power Difference Limit Mod" decider. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1439725735211303003)
-* `sz21_760.txt` (Nov 16, 2025): After running all machines to 10^11 steps ([link 1](https://discord.com/channels/960643023006490684/1438019511155691521/1439759182587891894), [link 2](https://discord.com/channels/960643023006490684/1438019511155691521/1440851396864905241)). 3 machines took 31957632 steps to halt, and this was the record.
-* `sz21_587.txt` (Nov 25, 2025): Convert to [Petri net](https://en.wikipedia.org/wiki/Petri_net), apply [FAST](https://lsv.ens-paris-saclay.fr/Software/fast/), and remove those that are infinite (i.e. non-halting). [link](https://discord.com/channels/960643023006490684/1438019511155691521/1442928279995809882)
+* `sz21_798.txt` (Dec 11, 2025): After applying the "Spanning Vectors" and "Power Difference Limit Mod" decider. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1448740671077748847)
+* `sz21_775.txt` (Dec 11, 2025): After running all machines to 10^9 steps ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1448784141788250183) and consider only sz21 machines). 3 machines took 31957632 steps to halt, and this was the record. (TODO: Run all machines in `sz21_798.txt` to 10^11 steps)
+* `sz21_602.txt` (Dec 11, 2025): Convert to [Petri net](https://en.wikipedia.org/wiki/Petri_net), apply [FAST](https://lsv.ens-paris-saclay.fr/Software/fast/), and remove those that are infinite (i.e. non-halting). ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1442928279995809882), but 15 machines were added)
 
 587 holdouts remain.
 
