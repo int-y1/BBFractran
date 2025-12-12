@@ -1,6 +1,6 @@
 # Holdouts lists
 
-`champions.txt` is a list of champions by increasing order. All of these machines halt. The size 20 and 21 champions have not been proven yet.
+`champions.txt` is a list of champions by increasing order. All of these machines halt. Champions of size 20 and greater have not been proven yet. The champions of size 22 might be replaced by a better champion.
 
 Each holdouts list is stored in a file called `sz(x)_(y).txt`, where `(x)` is the program size and `(y)` is the number of holdouts.
 
@@ -54,6 +54,8 @@ The 3 holdouts were proved non-halting manually: [holdout 1](https://discord.com
 ## Size 22
 
 * `sz22_91123.txt` (Dec 9, 2025): Direct output from `fractran20251116`.
+* `sz22_11130.txt` (Dec 11, 2025): After applying the "Spanning Vectors" and "Power Difference Limit Mod" decider. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1448729669263163596)
+* `sz22_10458.txt` (Dec 11, 2025): After running all machines to 10^9 steps ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1448806255261913199)). 3 machines took 31957632 steps to halt, and this was the record.
 
 91123 holdouts remain. TODO: run "Spanning Vectors", run "Power Difference Limit Mod", run all machines to 10^10 steps.
 
