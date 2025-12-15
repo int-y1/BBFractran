@@ -30,7 +30,7 @@ The 183 holdouts were proved non-halting by the "Power Limit" decider on Nov 8, 
 * `sz19_48.txt` (Nov 8, 2025): After applying the "Linear Combination" decider.
 * `sz19_3.txt` (Nov 13, 2025): After applying the "Spanning Vectors" decider. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1438558242388312165)
 
-The 3 holdouts were proved non-halting manually: [holdout 1](https://discord.com/channels/960643023006490684/1438019511155691521/1438564506216304763), [holdout 2](https://discord.com/channels/960643023006490684/1438019511155691521/1438584617085960323), [holdout 3](https://discord.com/channels/960643023006490684/1438019511155691521/1438580955773276160).
+The 3 holdouts were proved non-halting using "Masked Spanning Vectors" decider.
 
 ## Size 20
 
@@ -39,8 +39,9 @@ The 3 holdouts were proved non-halting manually: [holdout 1](https://discord.com
 * `sz20_279.txt` (Nov 13, 2025): After applying the "Spanning Vectors" decider. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1438559507579011194)
 * `sz20_34.txt` (Nov 14, 2025): After applying the "Power Difference Limit Mod" decider. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1438996636389998773)
 * `sz20_29.txt` (Dec 6, 2025): Convert to [Petri net](https://en.wikipedia.org/wiki/Petri_net), apply [FAST](https://lsv.ens-paris-saclay.fr/Software/fast/), and remove those that are infinite (i.e. non-halting). [link](https://discord.com/channels/960643023006490684/1438019511155691521/1447069110541484146)
+* `sz20_6.txt` (Dec 15, 2025): After applying the "Masked Spanning Vectors" decider. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1450186709420609537)
 
-29 holdouts remain.
+6 holdouts remain.
 
 ## Size 21
 
@@ -48,16 +49,19 @@ The 3 holdouts were proved non-halting manually: [holdout 1](https://discord.com
 * `sz21_798.txt` (Dec 11, 2025): After applying the "Spanning Vectors" and "Power Difference Limit Mod" decider. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1448740671077748847)
 * `sz21_775.txt` (Dec 11, 2025): After running all machines to 10^9 steps ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1448784141788250183) and consider only sz21 machines). 3 machines took 31957632 steps to halt, and this was the record. (TODO: Run all machines in `sz21_798.txt` to 10^11 steps)
 * `sz21_602.txt` (Dec 11, 2025): Convert to [Petri net](https://en.wikipedia.org/wiki/Petri_net), apply [FAST](https://lsv.ens-paris-saclay.fr/Software/fast/), and remove those that are infinite (i.e. non-halting). ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1442928279995809882), but 15 machines were added)
+* `sz21_394.txt` (Dec 15, 2025): After applying the "Masked Spanning Vectors" decider. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1450186709420609537)
 
-587 holdouts remain.
+394 holdouts remain.
 
 ## Size 22
 
 * `sz22_91123.txt` (Dec 9, 2025): Direct output from `fractran20251116`.
 * `sz22_11130.txt` (Dec 11, 2025): After applying the "Spanning Vectors" and "Power Difference Limit Mod" decider. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1448729669263163596)
 * `sz22_10458.txt` (Dec 11, 2025): After running all machines to 10^9 steps ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1448806255261913199)). 3 machines took 31957632 steps to halt, and this was the record.
+* `sz22_10441.txt` (Dec 12, 2025): After running all machines using accelerated `shift-sim` ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1449113470221156575), [link](https://discord.com/channels/960643023006490684/1438019511155691521/1449145769637712125)). 2 machines tie with longest runtime > 10^62.
+* `sz22_7777.txt` (Dec 15, 2025): After applying the "Masked Spanning Vectors" decider. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1450186709420609537)
 
-91123 holdouts remain. TODO: run "Spanning Vectors", run "Power Difference Limit Mod", run all machines to 10^10 steps.
+7777 holdouts remain.
 
 ## Size 23
 
