@@ -4,6 +4,8 @@
 
 Each holdouts list is stored in a file called `sz(x)_(y).txt`, where `(x)` is the program size and `(y)` is the number of holdouts.
 
+TODO: `SPAN_VEC_MASKED` made progress on size 19 and above. In particular, it might solve 3/3 of sz19, 23/29 of sz20, 205/602 of sz21, 2634/10441 of sz22. However, as of Dec 15, 2025, the holdouts lists have not been finalized yet.
+
 ## Errata
 
 * Dec 11, 2025: `sz21_783.txt` is incorrect. See `sz21_798.txt` for the correct version.
@@ -49,7 +51,7 @@ The 3 holdouts were proved non-halting manually: [holdout 1](https://discord.com
 * `sz21_775.txt` (Dec 11, 2025): After running all machines to 10^9 steps ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1448784141788250183) and consider only sz21 machines). 3 machines took 31957632 steps to halt, and this was the record. (TODO: Run all machines in `sz21_798.txt` to 10^11 steps)
 * `sz21_602.txt` (Dec 11, 2025): Convert to [Petri net](https://en.wikipedia.org/wiki/Petri_net), apply [FAST](https://lsv.ens-paris-saclay.fr/Software/fast/), and remove those that are infinite (i.e. non-halting). ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1442928279995809882), but 15 machines were added)
 
-587 holdouts remain.
+602 holdouts remain.
 
 ## Size 22
 
@@ -57,7 +59,7 @@ The 3 holdouts were proved non-halting manually: [holdout 1](https://discord.com
 * `sz22_11130.txt` (Dec 11, 2025): After applying the "Spanning Vectors" and "Power Difference Limit Mod" decider. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1448729669263163596)
 * `sz22_10458.txt` (Dec 11, 2025): After running all machines to 10^9 steps ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1448806255261913199)). 3 machines took 31957632 steps to halt, and this was the record.
 
-91123 holdouts remain. TODO: run "Spanning Vectors", run "Power Difference Limit Mod", run all machines to 10^10 steps.
+10458 holdouts remain. TODO: Create `sz22_10441.txt` (17 more machines were proven to halt).
 
 ## Size 23
 
