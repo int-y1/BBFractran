@@ -61,7 +61,7 @@ The 3 holdouts were proved non-halting manually: [holdout 1](https://discord.com
 * `sz22_10441.txt` (Dec 11, 2025): After removing 17 halting machines ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1450232568988307467)).
   * See `sz22_halted_689.txt` for a list of machines that took more than 10000 steps to halt (672 machines from [link](https://discord.com/channels/960643023006490684/1438019511155691521/1448784141788250183), 17 machines from [link](https://discord.com/channels/960643023006490684/1438019511155691521/1450232568988307467)). The format of each line is `<machine> <steps to halt>`.
 
-10458 holdouts remain. TODO: Create `sz22_10441.txt` (17 more machines were proven to halt).
+10441 holdouts remain.
 
 ## Size 23
 
