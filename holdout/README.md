@@ -60,8 +60,9 @@ The 3 holdouts were proved non-halting manually: [holdout 1](https://discord.com
 * `sz22_10458.txt` (Dec 11, 2025): After running all machines to 10^9 steps ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1448806255261913199)).
 * `sz22_10441.txt` (Dec 11, 2025): After removing 17 halting machines ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1450232568988307467)).
   * See `sz22_halted_689.txt` for a list of machines that took more than 10000 steps to halt (672 machines from [link](https://discord.com/channels/960643023006490684/1438019511155691521/1448784141788250183), 17 machines from [link](https://discord.com/channels/960643023006490684/1438019511155691521/1450232568988307467)). The format of each line is `<machine> <steps to halt>`.
+* `sz22_9829.txt` (Dec 21, 2025): After applying the "Power Difference Limit Mod" decider with higher parameters. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1452353731449327820)
 
-10441 holdouts remain.
+9829 holdouts remain.
 
 ## Size 23
 
