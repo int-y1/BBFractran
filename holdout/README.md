@@ -50,8 +50,9 @@ The 3 holdouts were proved non-halting manually: [holdout 1](https://discord.com
 * `sz21_798.txt` (Dec 11, 2025): After applying the "Spanning Vectors" and "Power Difference Limit Mod" decider. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1448740671077748847)
 * `sz21_775.txt` (Dec 11, 2025): After running all machines to 10^9 steps ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1448784141788250183) and consider only sz21 machines). 3 machines took 31957632 steps to halt, and this was the record. (TODO: Run all machines in `sz21_798.txt` to 10^11 steps)
 * `sz21_602.txt` (Dec 11, 2025): Convert to [Petri net](https://en.wikipedia.org/wiki/Petri_net), apply [FAST](https://lsv.ens-paris-saclay.fr/Software/fast/), and remove those that are infinite (i.e. non-halting). ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1442928279995809882), but 15 machines were added)
+* `sz21_597.txt` (Dec 22, 2025): After applying the "Power Difference Limit Mod" decider with higher parameters. (The strategy is the same as `sz22_9829.txt`.)
 
-602 holdouts remain.
+597 holdouts remain.
 
 ## Size 22
 
