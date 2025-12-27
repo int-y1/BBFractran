@@ -11,6 +11,7 @@ TODO: `SPAN_VEC_MASKED` made progress on size 19 and above. In particular, it mi
 * Dec 11, 2025: `sz21_783.txt` is incorrect. See `sz21_798.txt` for the correct version.
 * Dec 11, 2025: `sz21_760.txt` is incorrect. See `sz21_775.txt` for the correct version.
 * Dec 11, 2025: `sz21_587.txt` is incorrect. See `sz21_602.txt` for the correct version.
+* Dec 27, 2025: Removed vector representation from `sz20_1827.txt` and `sz20_902.txt`.
 
 ## Size 17
 
@@ -37,7 +38,7 @@ The 3 holdouts were proved non-halting manually: [holdout 1](https://discord.com
 ## Size 20
 
 * `sz20_1827.txt` (Nov 13, 2025): Direct output from `fractran20251113`.
-* `sz20_902.txt` (Nov 13, 2025): After applying the "Power Limit Mod" and "Linear Combination" decider. (Warning: this file used vector representation)
+* `sz20_902.txt` (Nov 13, 2025): After applying the "Power Limit Mod" and "Linear Combination" decider.
 * `sz20_279.txt` (Nov 13, 2025): After applying the "Spanning Vectors" decider. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1438559507579011194)
 * `sz20_34.txt` (Nov 14, 2025): After applying the "Power Difference Limit Mod" decider. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1438996636389998773)
 * `sz20_29.txt` (Dec 6, 2025): Convert to [Petri net](https://en.wikipedia.org/wiki/Petri_net), apply [FAST](https://lsv.ens-paris-saclay.fr/Software/fast/), and remove those that are infinite (i.e. non-halting). [link](https://discord.com/channels/960643023006490684/1438019511155691521/1447069110541484146)
