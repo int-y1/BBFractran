@@ -42,3 +42,5 @@
 
 # custom
 enumerate/fractran.txt
+decider/__pycache__
+decider/tmp.txt
