@@ -1,19 +1,19 @@
 import sys
 #sys.stdout=open('tmp.txt','w')
-from itertools import product
+import z3
 from utils import parse_file, unparse_line
 
 '''
-idea of lin_comb (Linear Combination)
+idea of lin_comb2 (Linear Combination + Z3)
 
 * the list [a,b,c,d,...] represents the number 2^a * 3^b * 5^c * 7^d * ...
-* find coefficients c_a, c_b, c_c, c_d, ... that satisfy
+* use z3 to find coefficients c_a, c_b, c_c, c_d, ... that satisfy
   * c_a > 0, starting number is positive
   * if sum(i*c_i) > 0, a fraction can be used
   * for each fraction, sum(i*c_i) stays the same or increases
 * if coefficients exist, the program is non-halt, and the certificate is LIN_COMB(c_a, c_b, c_c, c_d, ...)
 '''
-def lin_comb(prog,EXP_LIM):
+def lin_comb2(prog):
     maxidx=len(prog[0])
     usable=[0]*maxidx
     for tmp in prog:
@@ -22,16 +22,19 @@ def lin_comb(prog,EXP_LIM):
         if not use2 and len(use1)==1: usable[use1[0]]=1
     if not usable[0]: return None
 
-    c0=[list(range(1,EXP_LIM+1))]
+    s=z3.Solver()
+    c=[z3.Int(f'c_{i}') for i in range(maxidx)]
+
+    s.add(c[0]>0)
     for i in range(1,maxidx):
-        if usable[i]: c0.append(list(range(-EXP_LIM,EXP_LIM+1)))
-        else: c0.append(list(range(-EXP_LIM,1)))
-    for c in product(*c0):
-        # every inst should be >=0
-        for tmp in prog:
-            if sum(i*j for i,j in zip(c,tmp))<0: break
-        else:
-            return f'LIN_COMB{c}'
+        if not usable[i]: s.add(c[i]<=0)
+    for f in prog:
+        s.add(sum(ci*fi for ci,fi in zip(c,f))>=0)
+
+    if s.check()==z3.sat:
+        m=s.model()
+        m2=tuple(m[ci].as_long() for ci in c)
+        return f'LIN_COMB2{m2}'
 
     return None
 
@@ -41,11 +44,9 @@ print()
 
 holdouts2=[]
 for prog in holdouts:
-    for EXP_LIM in range(1,5):
-        result=lin_comb(prog,EXP_LIM)
-        if result is not None:
-            print(f'{unparse_line(prog)}, NON-HALT: {result}')
-            break
+    result=lin_comb2(prog)
+    if result is not None:
+        print(f'{unparse_line(prog)}, NON-HALT: {result}')
     else:
         holdouts2.append(prog)
 
