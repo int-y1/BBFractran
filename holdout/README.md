@@ -52,8 +52,9 @@ The 3 holdouts were proved non-halting manually: [holdout 1](https://discord.com
 * `sz21_775.txt` (Dec 11, 2025): After running all machines to 10^9 steps ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1448784141788250183) and consider only sz21 machines). 3 machines took 31957632 steps to halt, and this was the record. (TODO: Run all machines in `sz21_798.txt` to 10^11 steps)
 * `sz21_602.txt` (Dec 11, 2025): Convert to [Petri net](https://en.wikipedia.org/wiki/Petri_net), apply [FAST](https://lsv.ens-paris-saclay.fr/Software/fast/), and remove those that are infinite (i.e. non-halting). ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1442928279995809882), but 15 machines were added)
 * `sz21_597.txt` (Dec 22, 2025): After applying the "Power Difference Limit Mod" decider with higher parameters. (The strategy is the same as `sz22_9829.txt`.)
+* `sz21_553.txt` (Dec 31, 2025): After applying the "Integer Spanning Vectors" decider.
 
-597 holdouts remain.
+553 holdouts remain.
 
 ## Size 22
 
@@ -63,8 +64,9 @@ The 3 holdouts were proved non-halting manually: [holdout 1](https://discord.com
 * `sz22_10441.txt` (Dec 11, 2025): After removing 17 halting machines ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1450232568988307467)).
   * See `sz22_halted_689.txt` for a list of machines that took more than 10000 steps to halt (672 machines from [link](https://discord.com/channels/960643023006490684/1438019511155691521/1448784141788250183), 17 machines from [link](https://discord.com/channels/960643023006490684/1438019511155691521/1450232568988307467)). The format of each line is `<machine> <steps to halt>`.
 * `sz22_9829.txt` (Dec 21, 2025): After applying the "Power Difference Limit Mod" decider with higher parameters. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1452353731449327820)
+* `sz22_8352.txt` (Dec 31, 2025): After applying the "Integer Spanning Vectors" decider.
 
-9829 holdouts remain.
+8352 holdouts remain.
 
 ## Size 23
 
