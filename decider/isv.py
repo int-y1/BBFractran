@@ -15,7 +15,7 @@ this is a stronger version of the original "spanning vectors" decider
   * s_final does not trigger any fraction
 * if z3 says "z3.unsat", the program is non-halt
 '''
-def isv(prog,steps):
+def isv(prog: list[list[int]],steps: int) -> str|None:
     maxidx=len(prog[0])
 
     # run steps
@@ -56,7 +56,7 @@ def isv(prog,steps):
     return None
 
 # get the minimal certificate. intended for researching this decider.
-def bsearch(prog,limit=1000):
+def bsearch(prog: list[list[int]],limit: int=1000) -> str|None:
     out=isv(prog,0)
     if out is not None: return out
     out=isv(prog,limit)
@@ -74,7 +74,7 @@ holdouts=parse_file('../holdout/sz20_902.txt')
 print(f'attempt to solve {len(holdouts)} holdouts')
 print()
 
-holdouts2=[]
+holdouts2: list[list[list[int]]]=[]
 for prog in holdouts:
     result=isv(prog,0)
     if result is None: result=isv(prog,1000)

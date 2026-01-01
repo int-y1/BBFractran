@@ -13,7 +13,7 @@ idea of lin_comb (Linear Combination)
   * for each fraction, sum(i*c_i) stays the same or increases
 * if coefficients exist, the program is non-halt, and the certificate is LIN_COMB(c_a, c_b, c_c, c_d, ...)
 '''
-def lin_comb(prog,EXP_LIM):
+def lin_comb(prog: list[list[int]],EXP_LIM: int) -> str|None:
     maxidx=len(prog[0])
     usable=[0]*maxidx
     for tmp in prog:
@@ -39,7 +39,7 @@ holdouts=parse_file('../holdout/sz19_84.txt')
 print(f'attempt to solve {len(holdouts)} holdouts')
 print()
 
-holdouts2=[]
+holdouts2: list[list[list[int]]]=[]
 for prog in holdouts:
     for EXP_LIM in range(1,5):
         result=lin_comb(prog,EXP_LIM)

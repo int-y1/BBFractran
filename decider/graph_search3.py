@@ -23,7 +23,7 @@ idea of graph_search3 (Power Difference Limit Mod)
 
 todo: this is a confusing description. describe it better
 '''
-def graph_search3(prog,EXP_LIM):
+def graph_search3(prog: list[list[int]],EXP_LIM: int) -> str|None:
     maxidx=len(prog[0])
     # graph theory stuff
     u=[]
@@ -80,9 +80,9 @@ holdouts=parse_file('../holdout/sz20_279.txt')
 print(f'attempt to solve {len(holdouts)} holdouts')
 print()
 
-holdouts2=[]
+holdouts2: list[list[list[int]]]=[]
 for prog in holdouts:
-    for EXP_LIM in range(1,7):
+    for EXP_LIM in range(1,13):
         result=graph_search3(prog,EXP_LIM)
         if result is not None:
             print(f'{unparse_line(prog)}, NON-HALT: {result}')

@@ -15,7 +15,7 @@ idea of graph_search2 (Power Limit Mod)
   * (the code used the numbers 0,1,...,2*EXP_LIM-1 to represent these groups)
 * if halting never occurs, the program runs forever
 '''
-def graph_search2(prog,EXP_LIM):
+def graph_search2(prog: list[list[int]],EXP_LIM: int) -> str|None:
     maxidx=len(prog[0])
     # graph theory stuff
     q=[tuple([1]+[0]*(maxidx-1))]
@@ -54,7 +54,7 @@ holdouts=parse_file('../holdout/sz19_231.txt')
 print(f'attempt to solve {len(holdouts)} holdouts')
 print()
 
-holdouts2=[]
+holdouts2: list[list[list[int]]]=[]
 for prog in holdouts:
     for EXP_LIM in range(1,13):
         result=graph_search2(prog,EXP_LIM)
