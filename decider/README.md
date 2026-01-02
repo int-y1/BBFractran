@@ -13,3 +13,5 @@ List of deciders:
   * `lin_comb2.py` is a faster version that uses Z3 to find the coefficients.
 * Integer Spanning Vectors (`isv.py`).
   * The certificate `ISV(x)` represents running for `x` steps, and using this state as the starting state.
+* Masked Linear Invariant (`mli.py`).
+  * See [sligocki/etc/fractran/mask_lin_invar.py](https://github.com/sligocki/etc/blob/main/fractran/mask_lin_invar.py) for more details.

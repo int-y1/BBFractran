@@ -33,7 +33,9 @@ The 183 holdouts were proved non-halting by the "Power Limit" decider on Nov 8, 
 * `sz19_48.txt` (Nov 8, 2025): After applying the "Linear Combination" decider.
 * `sz19_3.txt` (Nov 13, 2025): After applying the "Spanning Vectors" decider. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1438558242388312165)
 
-The 3 holdouts were proved non-halting manually: [holdout 1](https://discord.com/channels/960643023006490684/1438019511155691521/1438564506216304763), [holdout 2](https://discord.com/channels/960643023006490684/1438019511155691521/1438584617085960323), [holdout 3](https://discord.com/channels/960643023006490684/1438019511155691521/1438580955773276160).
+On Nov 13, 2025, the 3 holdouts were proved non-halting manually: [holdout 1](https://discord.com/channels/960643023006490684/1438019511155691521/1438564506216304763), [holdout 2](https://discord.com/channels/960643023006490684/1438019511155691521/1438584617085960323), [holdout 3](https://discord.com/channels/960643023006490684/1438019511155691521/1438580955773276160).
+
+On Jan 1, 2026, the 3 holdouts can be solved automatically by the "Masked Linear Invariant" decider.
 
 ## Size 20
 
@@ -42,8 +44,9 @@ The 3 holdouts were proved non-halting manually: [holdout 1](https://discord.com
 * `sz20_279.txt` (Nov 13, 2025): After applying the "Spanning Vectors" decider. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1438559507579011194)
 * `sz20_34.txt` (Nov 14, 2025): After applying the "Power Difference Limit Mod" decider. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1438996636389998773)
 * `sz20_29.txt` (Dec 6, 2025): Convert to [Petri net](https://en.wikipedia.org/wiki/Petri_net), apply [FAST](https://lsv.ens-paris-saclay.fr/Software/fast/), and remove those that are infinite (i.e. non-halting). [link](https://discord.com/channels/960643023006490684/1438019511155691521/1447069110541484146)
+* `sz20_6.txt` (Jan 1, 2026): After applying the "Masked Linear Invariant" decider.
 
-29 holdouts remain.
+The 6 holdouts were proved non-halting with a formal Lean proof. [link](https://github.com/int-y1/proofs/tree/master/BBfLean)
 
 ## Size 21
 
@@ -53,8 +56,9 @@ The 3 holdouts were proved non-halting manually: [holdout 1](https://discord.com
 * `sz21_602.txt` (Dec 11, 2025): Convert to [Petri net](https://en.wikipedia.org/wiki/Petri_net), apply [FAST](https://lsv.ens-paris-saclay.fr/Software/fast/), and remove those that are infinite (i.e. non-halting). ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1442928279995809882), but 15 machines were added)
 * `sz21_597.txt` (Dec 22, 2025): After applying the "Power Difference Limit Mod" decider with higher parameters. (The strategy is the same as `sz22_9829.txt`.)
 * `sz21_553.txt` (Dec 31, 2025): After applying the "Integer Spanning Vectors" decider.
+* `sz21_345.txt` (Jan 1, 2026): After applying the "Masked Linear Invariant" decider.
 
-553 holdouts remain.
+345 holdouts remain.
 
 ## Size 22
 
@@ -65,8 +69,9 @@ The 3 holdouts were proved non-halting manually: [holdout 1](https://discord.com
   * See `sz22_halted_689.txt` for a list of machines that took more than 10000 steps to halt (672 machines from [link](https://discord.com/channels/960643023006490684/1438019511155691521/1448784141788250183), 17 machines from [link](https://discord.com/channels/960643023006490684/1438019511155691521/1450232568988307467)). The format of each line is `<machine> <steps to halt>`.
 * `sz22_9829.txt` (Dec 21, 2025): After applying the "Power Difference Limit Mod" decider with higher parameters. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1452353731449327820)
 * `sz22_8352.txt` (Dec 31, 2025): After applying the "Integer Spanning Vectors" decider.
+* `sz22_5682.txt` (Jan 1, 2026): After applying the "Masked Linear Invariant" decider.
 
-8352 holdouts remain.
+5682 holdouts remain.
 
 ## Size 23
 
