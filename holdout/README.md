@@ -4,8 +4,6 @@
 
 Each holdouts list is stored in a file called `sz(x)_(y).txt`, where `(x)` is the program size and `(y)` is the number of holdouts.
 
-TODO: `SPAN_VEC_MASKED` made progress on size 19 and above. In particular, it might solve 3/3 of sz19, 23/29 of sz20, 205/602 of sz21, 2634/10441 of sz22. However, as of Dec 15, 2025, the holdouts lists have not been finalized yet.
-
 ## Errata
 
 * Dec 11, 2025: `sz21_783.txt` is incorrect. See `sz21_798.txt` for the correct version.
