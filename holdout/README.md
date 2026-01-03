@@ -4,6 +4,8 @@
 
 Each holdouts list is stored in a file called `sz(x)_(y).txt`, where `(x)` is the program size and `(y)` is the number of holdouts.
 
+TODO: A new decider "Beeping Integer Spanning Vectors" made progress on size 20 and above. In particular, it might solve 6/6 of sz20 (no Lean proofs needed), 142/345 of sz21, and 2321/5682 of sz22. However, as of Jan 3, 2025, this decider hasn't been reviewed / reproduced by the bbchallenge community. Please open an issue if you find a bug.
+
 ## Errata
 
 * Dec 11, 2025: `sz21_783.txt` is incorrect. See `sz21_798.txt` for the correct version.

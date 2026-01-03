@@ -15,3 +15,5 @@ List of deciders:
   * The certificate `ISV(x)` represents running for `x` steps, and using this state as the starting state.
 * Masked Linear Invariant (`mli.py`).
   * See [sligocki/etc/fractran/mask_lin_invar.py](https://github.com/sligocki/etc/blob/main/fractran/mask_lin_invar.py) for more details.
+* Beeping Integer Spanning Vectors (`bisv.py`).
+  * Warning: this decider hasn't been reviewed / reproduced by the bbchallenge community. Please open an issue if you find a bug.
