@@ -4,31 +4,93 @@ from itertools import product
 from utils import parse_file, unparse_line
 
 '''
-idea of graph_search2 (Power Limit Mod)
+This is an implementation of Power Limit Mod. See Theorem PLM.7 for the main idea.
 
+---
 
-* EXP_LIM is the exponent limit
-* the list [a,b,c,d,...] represents the number 2^a * 3^b * 5^c * 7^d * ...
-* do a graph search, but limit the exponents to 2*EXP_LIM different groups
-  * split into 2 groups, <EXP_LIM and >=EXP_LIM
-  * split into EXP_LIM groups, the groups are mod EXP_LIM
-  * (the code used the numbers 0,1,...,2*EXP_LIM-1 to represent these groups)
-* if halting never occurs, the program runs forever
+Basic definitions:
+* N = {0, 1, 2, ...}.
+* Z = {..., -2, -1, 0, 1, 2, ...}.
+* F is a Fractran program in vector representation. F is a J by I matrix with entries in Z.
+  * F contains J instructions, indexed from F[0] to F[J-1].
+  * Each instruction has length I. That is, F only uses the first I primes. The primes are
+    indexed from F[*][0] to F[*][I-1].
+  * min(F) is the minimum element of F. This is usually negative.
+  * max(F) is the maximum element of F. This is usually positive.
+* u, v represent a Fractran state. A Fractran state is a vector in N^I.
+  * u_0 represents the initial Fractran state [1, 0, 0, ...] in N^I.
+  * u_k represents the Fractran state after k iterations of F. The initial state is k = 0.
+* u |- v means that 1 iteration of F will turn u into v.
+  * u |-* v means that >= 0 iterations of F will turn u into v.
+  * u |- halt means that u will halt after 1 iteration of F.
+  * u |-* halt means that u will halt after >= 0 iterations of F.
+
+---
+
+Definition PLM.1 (AP). Define the set AP(a, d) to be {a+d*i | i in N}. In other words, AP(a, d) is
+the set of terms in an arithmetic progression.
+
+Definition PLM.2 (Exp). Let n >= 1. Define Exp(n) to be these 2*n sets:
+  AP(0, 0), AP(1, 0), ..., AP(n-1, 0)
+  AP(n, n), AP(n+1, n), ..., AP(2*n-1, n)
+Note: AP(*, 0) contains 1 element, and could be considered degenerate.
+Note: In the code, these 2*n sets are represented as an integer between 0 and 2*n-1.
+
+Lemma PLM.3. Let n >= 1. Exp(n) partitions N. (https://en.wikipedia.org/wiki/Partition_of_a_set)
+Proof. Left as an exercise to the reader. (This looks like a tedious homework problem.)
+
+Definition PLM.4 (compress_n). Let n >= 1. Let u in N^I be a Fractran state. Define compress_n(u) to
+be a vector {0, 1, ..., 2*n-1}^I. Each element of u gets mapped to {0, 1, ..., 2*n-1} using
+Definition PLM.2. Also, define compress_n(halt) = halt.
+
+Definition PLM.5 (G_n). Let n >= 1. Define the directed graph G_n = (V_n, E_n) as follows:
+* V_n = {0, 1, ..., 2*n-1}^I U {halt}.
+* Suppose u |- v. Then E_n contains the edge from compress_n(u) to compress_n(v).
+* Suppose u |- halt. Then E_n contains the edge from compress_n(u) to halt.
+
+Note PLM.5b. The hardest part of the code is constructing edges from compress_n(u) to compress_n(v).
+Here are the cases you will need to consider:
+* Exponents that are <n have 1 choice, and are easy to handle.
+* Exponents that are >=n can have 1 or more choices:
+  * The 1st choice is to stay >=n. This is always allowed.
+  * The 2nd choice is to drop to <n. The exponent must decrease and cross the gap.
+  * The 3rd choice is to drop to <0. This can happen when n < -min(F). See Lemma PLM.8 for more.
+
+Lemma PLM.6. Suppose u_0 |-* halt. Let n >= 1. G_n contains a path from compress_n(u_0) to halt.
+Proof. Let the path to halt be u_0 |- u_1 |- ... |- u_k |- halt. There is an edge from
+compress_n(u_i) to compress_n(u_{i+1}), and an edge from compress_n(u_k) to halt. QED.
+
+Theorem PLM.7 (Power Limit Mod). Let n >= 1. Suppose G_n does not contain a path from
+compress_n(u_0) to halt. Then F is non-halting (i.e. "u_0 |-* halt" is false).
+Proof. By contradiction of Lemma PLM.6.
+Note: u_0 could be changed to u_100. However, the decider strength stays the same, since you can
+increase n until u_0 to u_100 all have 1 next instruction.
+
+Lemma PLM.8. Let n >= -min(F) (in other words, n + min(F) >= 0). Suppose
+compress_n(u) = compress_n(u'). Then F will apply the same instruction to u and u'.
+Proof. Take a look at each exponent u[i]:
+* If u[i] < n, then u[i] = u'[i]. This exponent will make the same set of instructions unavailable
+  for both u and u'.
+* If u[i] >= n, then u'[i] >= n as well. Since n + min(F) >= 0, no instruction will make u[i]
+  negative. Therefore, this exponent will not make any instructions unavailable.
+Both u and u' have the same set of available instructions. The result follows. QED.
+Note: For n >= -min(F), the 3rd choice from Note PLM.5b becomes impossible.
+Note: If n is too small (that is, n < -min(F)), you can try a multiple of n instead.
 '''
 
 
 def graph_search2(prog: list[list[int]], EXP_LIM: int) -> str | None:
     maxidx = len(prog[0])
-    # graph theory stuff
-    q = [tuple([1]+[0]*(maxidx-1))]
-    vis = set(q)
 
-    # guarantee that the same inst is always used
+    # Lemma PLM.8: guarantee that the same inst is always used
     for tmp in prog:
         for e in tmp:
             if e+EXP_LIM < 0:
-                return None
+                return None  # EXP_LIM is too small, use a bigger value for EXP_LIM
 
+    # graph theory stuff
+    q = [tuple([1]+[0]*(maxidx-1))]
+    vis = set(q)
     while q:
         u = q.pop()
         for inst in prog:
@@ -54,8 +116,9 @@ def graph_search2(prog: list[list[int]], EXP_LIM: int) -> str | None:
                     q.append(v)
                 break
         else:
-            return None
+            return None  # found a path from compress(u_0) to halt
 
+    # Theorem PLM.7 is applicable
     return f'GRAPH_SEARCH2({EXP_LIM})'
 
 
