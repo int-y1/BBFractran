@@ -1,5 +1,5 @@
 import sys
-#sys.stdout=open('tmp.txt','w')
+# sys.stdout=open('tmp.txt','w')
 from itertools import product
 from utils import parse_file, unparse_line
 
@@ -15,33 +15,41 @@ idea of graph_search2 (Power Limit Mod)
   * (the code used the numbers 0,1,...,2*EXP_LIM-1 to represent these groups)
 * if halting never occurs, the program runs forever
 '''
-def graph_search2(prog: list[list[int]],EXP_LIM: int) -> str|None:
-    maxidx=len(prog[0])
+
+
+def graph_search2(prog: list[list[int]], EXP_LIM: int) -> str | None:
+    maxidx = len(prog[0])
     # graph theory stuff
-    q=[tuple([1]+[0]*(maxidx-1))]
-    vis=set(q)
+    q = [tuple([1]+[0]*(maxidx-1))]
+    vis = set(q)
 
     # guarantee that the same inst is always used
     for tmp in prog:
         for e in tmp:
-            if e+EXP_LIM<0: return None
+            if e+EXP_LIM < 0:
+                return None
 
     while q:
-        u=q.pop()
+        u = q.pop()
         for inst in prog:
-            for e0,e1 in zip(u,inst):
-                if e0+e1<0: break
+            for e0, e1 in zip(u, inst):
+                if e0+e1 < 0:
+                    break
             else:
                 # inst matches, get next states
-                v0=[]
-                for e0,e1 in zip(u,inst):
-                    r0=e0+e1
-                    while r0>=2*EXP_LIM: r0-=EXP_LIM
-                    if r0<EXP_LIM and e0>=EXP_LIM: v0.append([r0,r0+EXP_LIM])
-                    else: v0.append([r0])
+                v0 = []
+                for e0, e1 in zip(u, inst):
+                    r0 = e0+e1
+                    while r0 >= 2*EXP_LIM:
+                        r0 -= EXP_LIM
+                    if r0 < EXP_LIM and e0 >= EXP_LIM:
+                        v0.append([r0, r0+EXP_LIM])
+                    else:
+                        v0.append([r0])
                 # add to queue
                 for v in product(*v0):
-                    if v in vis: continue
+                    if v in vis:
+                        continue
                     vis.add(v)
                     q.append(v)
                 break
@@ -50,14 +58,15 @@ def graph_search2(prog: list[list[int]],EXP_LIM: int) -> str|None:
 
     return f'GRAPH_SEARCH2({EXP_LIM})'
 
-holdouts=parse_file('../holdout/sz19_231.txt')
+
+holdouts = parse_file('../holdout/sz19_231.txt')
 print(f'attempt to solve {len(holdouts)} holdouts')
 print()
 
-holdouts2: list[list[list[int]]]=[]
+holdouts2: list[list[list[int]]] = []
 for prog in holdouts:
-    for EXP_LIM in range(1,13):
-        result=graph_search2(prog,EXP_LIM)
+    for EXP_LIM in range(1, 13):
+        result = graph_search2(prog, EXP_LIM)
         if result is not None:
             print(f'{unparse_line(prog)}, NON-HALT: {result}')
             break
@@ -67,4 +76,5 @@ for prog in holdouts:
 print()
 print(f'{len(holdouts2)} holdouts remaining')
 print()
-for prog in holdouts2: print(unparse_line(prog))
+for prog in holdouts2:
+    print(unparse_line(prog))

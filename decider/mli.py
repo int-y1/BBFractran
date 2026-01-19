@@ -190,14 +190,14 @@ def decide(prog: list[list[int]], init_steps: int) -> DecideResult:
     return decide_pre(prog, state)
 
 
-holdouts=parse_file('../holdout/sz20_29.txt')
-#sys.stdout=open('tmp.txt','w')
+holdouts = parse_file('../holdout/sz20_29.txt')
+# sys.stdout=open('tmp.txt','w')
 print(f'attempt to solve {len(holdouts)} holdouts')
 print()
 
-holdouts2: list[list[list[int]]]=[]
+holdouts2: list[list[list[int]]] = []
 for prog in holdouts:
-    result=decide(prog,1000)
+    result = decide(prog, 1000)
     if result.infinite:
         print(f'{unparse_line(prog)}, NON-HALT: {result}')
     else:
@@ -206,4 +206,5 @@ for prog in holdouts:
 print()
 print(f'{len(holdouts2)} holdouts remaining')
 print()
-for prog in holdouts2: print(unparse_line(prog))
+for prog in holdouts2:
+    print(unparse_line(prog))
