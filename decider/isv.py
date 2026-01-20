@@ -1,26 +1,45 @@
 import sys
-# sys.stdout=open('tmp.txt','w')
 import z3
 from utils import parse_file, unparse_line
 
 '''
-isv (Integer Spanning Vectors + Z3)
-this is a stronger version of the original "spanning vectors" decider
+This is an implementation of Integer Spanning Vectors using Z3. See Theorem ISV.3 for the main idea.
 
-* the list [a,b,c,d,...] represents the number 2^a * 3^b * 5^c * 7^d * ...
-* use z3 to find integer coefficients c_0, c_1, c_2, ... where
-  * every c_j >= 0
-  * s_final = u + sum(c_j * fraction_j), where u is any state reached by the fm (initially, u=[1, 0, 0, ...])
-  * every element of s_final is >= 0
-  * s_final does not trigger any fraction
-* if z3 says "z3.unsat", the program is non-halt
+---
+
+In graph_search2.py, read the following: Basic definitions.
+
+For info on the Z3 API, read:
+https://microsoft.github.io/z3guide/programming/Z3%20Python%20-%20Readonly/Introduction
+You may skip these sections: Machine Arithmetic, Bit Tricks.
+
+---
+
+Definition ISV.1. Let c in N^J. Let k in N. Say that (k, c) is a probable-halt-certificate if it
+satisfies:
+* Define v := u_k + sum_{j=0}^{J-1} c[j]*F[j]. Warning: v is in Z^I.
+* v[i] >= 0 for all i in {0, 1, ..., I-1}.
+* v |- halt.
+
+Lemma ISV.2. Let k in N. Suppose u_0 |-* u_k. If F is halting, then there exists c in N^J such that
+(k, c) is a probable-halt-certificate.
+Proof. Let u_x be the last non-halting state, that is, u_0 |-* u_k |-* u_x |- halt. Define c in N^J
+as follows: c[j] is the number of times the instruction F[j] is used in u_k |-* u_x. Then
+u_x = u_k + sum_{j=0}^{J-1} c[j]*F[j]. min(u_x) >= 0 because u_x is a Fractran state that appeared
+naturally. Lastly, u_x |- halt. Therefore, (k, c) is a probable-halt-certificate. QED.
+
+Theorem ISV.3. Let k in N. Suppose u_0 |-* u_k. If there does not exist c in N^J such that
+(k, c) is a probable-halt-certificate, then F is non-halting.
+Proof. By contradiction of Lemma ISV.2.
+Note: The code tries k = 0 and k = 1000. I have to keep k = 1000 because it can solve hundreds of
+size-22 FMs.
 '''
 
 
 def isv(prog: list[list[int]], steps: int) -> str | None:
     maxidx = len(prog[0])
 
-    # run steps
+    # run steps to compute u_k
     u = [1]+[0]*(maxidx-1)
     for _ in range(steps):
         for f in prog:
@@ -36,26 +55,31 @@ def isv(prog: list[list[int]], steps: int) -> str | None:
 
     s = z3.Solver()
     c = [z3.Int(f'c_{j}') for j in range(len(prog))]
-    sfinal = [z3.Int(f's_final_{i}') for i in range(maxidx)]
+    v = [z3.Int(f'v_{i}') for i in range(maxidx)]
 
+    # Let c in N^J.
     for j in range(len(prog)):
         s.add(c[j] >= 0)
+    # Define v := u_k + sum_{j=0}^{J-1} c[j]*F[j].
     for i in range(maxidx):
-        s.add(sfinal[i] == u[i]+sum(c[j]*prog[j][i] for j in range(len(prog))))
+        s.add(v[i] == u[i]+sum(c[j]*prog[j][i] for j in range(len(prog))))
+    # v[i] >= 0 for all i in {0, 1, ..., I-1}.
     for i in range(maxidx):
-        s.add(sfinal[i] >= 0)
+        s.add(v[i] >= 0)
+    # v |- halt.
     for f in prog:
         tmp = []
-        for i, v in enumerate(f):
-            if v >= 0:
+        for i, e in enumerate(f):
+            if e >= 0:
                 continue
-            tmp.append(sfinal[i]+v < 0)
+            tmp.append(v[i]+e < 0)
         s.add(z3.Or(*tmp))
 
     if s.check() == z3.unsat:
         return f'ISV({steps})'
 
-    if 0:  # for debugging. this doesn't prove infinite.
+    # for debugging the probable-halt-certificate. this doesn't prove infinite.
+    if 0:
         if s.check() == z3.sat:
             m = s.model()
             m2 = tuple(m[ci].as_long() for ci in c)
@@ -85,6 +109,7 @@ def bsearch(prog: list[list[int]], limit: int = 1000) -> str | None:
 
 
 holdouts = parse_file('../holdout/sz20_902.txt')
+# sys.stdout = open('tmp.txt', 'w')
 print(f'attempt to solve {len(holdouts)} holdouts')
 print()
 

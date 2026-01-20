@@ -73,7 +73,7 @@ def lin_comb2(prog: list[list[int]]) -> str | None:
 
 
 holdouts = parse_file('../holdout/sz19_84.txt')
-# sys.stdout=open('tmp.txt','w')
+# sys.stdout = open('tmp.txt', 'w')
 print(f'attempt to solve {len(holdouts)} holdouts')
 print()
 
