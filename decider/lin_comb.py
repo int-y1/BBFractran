@@ -1,9 +1,10 @@
 import sys
-# sys.stdout=open('tmp.txt','w')
 from itertools import product
 from utils import parse_file, unparse_line
 
 '''
+NOTE: This file is deprecated. Use lin_comb2.py instead.
+
 idea of lin_comb (Linear Combination)
 
 * the list [a,b,c,d,...] represents the number 2^a * 3^b * 5^c * 7^d * ...
@@ -44,6 +45,7 @@ def lin_comb(prog: list[list[int]], EXP_LIM: int) -> str | None:
 
 
 holdouts = parse_file('../holdout/sz19_84.txt')
+# sys.stdout=open('tmp.txt','w')
 print(f'attempt to solve {len(holdouts)} holdouts')
 print()
 
