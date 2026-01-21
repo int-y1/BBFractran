@@ -41,27 +41,27 @@ Proof. Use induction with Lemma LC.3 and Lemma LC.4.
 '''
 
 
-def lin_comb2(prog: list[list[int]]) -> str | None:
-    maxidx = len(prog[0])
-    usable = [0]*maxidx
-    for tmp in prog:
-        use2 = [i for i in range(maxidx) if tmp[i] < -1]
-        use1 = [i for i in range(maxidx) if tmp[i] == -1]
+def lin_comb2(F: list[list[int]]) -> str | None:
+    I = len(F[0])
+    usable = [0]*I
+    for inst in F:
+        use2 = [i for i in range(I) if inst[i] < -1]
+        use1 = [i for i in range(I) if inst[i] == -1]
         if not use2 and len(use1) == 1:
             usable[use1[0]] = 1
 
     s = z3.Solver()
-    c = [z3.Int(f'c_{i}') for i in range(maxidx)]
+    c = [z3.Int(f'c_{i}') for i in range(I)]
 
     # c ⋅ u_0 > 0. It simplifies to c[0] > 0.
     s.add(c[0] > 0)
     # For all i in {0, 1, ..., I-1}, if c[i] > 0 then i is usable.
-    for i in range(maxidx):
+    for i in range(I):
         if not usable[i]:
             s.add(c[i] <= 0)
     # c ⋅ F[j] >= 0 for all instructions F[j].
-    for f in prog:
-        s.add(sum(ci*fi for ci, fi in zip(c, f)) >= 0)
+    for inst in F:
+        s.add(sum(ci*insti for ci, insti in zip(c, inst)) >= 0)
 
     if s.check() == z3.sat:
         m = s.model()
@@ -78,15 +78,15 @@ print(f'attempt to solve {len(holdouts)} holdouts')
 print()
 
 holdouts2: list[list[list[int]]] = []
-for prog in holdouts:
-    result = lin_comb2(prog)
+for F in holdouts:
+    result = lin_comb2(F)
     if result is not None:
-        print(f'{unparse_line(prog)}, NON-HALT: {result}')
+        print(f'{unparse_line(F)}, NON-HALT: {result}')
     else:
-        holdouts2.append(prog)
+        holdouts2.append(F)
 
 print()
 print(f'{len(holdouts2)} holdouts remaining')
 print()
-for prog in holdouts2:
-    print(unparse_line(prog))
+for F in holdouts2:
+    print(unparse_line(F))

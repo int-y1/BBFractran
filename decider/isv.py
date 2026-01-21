@@ -36,40 +36,41 @@ size-22 FMs.
 '''
 
 
-def isv(prog: list[list[int]], steps: int) -> str | None:
-    maxidx = len(prog[0])
+def isv(F: list[list[int]], steps: int) -> str | None:
+    J = len(F)
+    I = len(F[0])
 
     # run steps to compute u_k
-    u = [1]+[0]*(maxidx-1)
+    u = [1]+[0]*(I-1)
     for _ in range(steps):
-        for f in prog:
-            for e0, e1 in zip(u, f):
+        for inst in F:
+            for e0, e1 in zip(u, inst):
                 if e0+e1 < 0:
                     break
             else:
-                for i in range(maxidx):
-                    u[i] += f[i]
+                for i in range(I):
+                    u[i] += inst[i]
                 break
         else:
             return None  # halted, shouldn't happen
 
     s = z3.Solver()
-    c = [z3.Int(f'c_{j}') for j in range(len(prog))]
-    v = [z3.Int(f'v_{i}') for i in range(maxidx)]
+    c = [z3.Int(f'c_{j}') for j in range(J)]
+    v = [z3.Int(f'v_{i}') for i in range(I)]
 
     # Let c in N^J.
-    for j in range(len(prog)):
+    for j in range(J):
         s.add(c[j] >= 0)
     # Define v := u_k + sum_{j=0}^{J-1} c[j]*F[j].
-    for i in range(maxidx):
-        s.add(v[i] == u[i]+sum(c[j]*prog[j][i] for j in range(len(prog))))
+    for i in range(I):
+        s.add(v[i] == u[i]+sum(c[j]*F[j][i] for j in range(J)))
     # v[i] >= 0 for all i in {0, 1, ..., I-1}.
-    for i in range(maxidx):
+    for i in range(I):
         s.add(v[i] >= 0)
     # v |- halt.
-    for f in prog:
+    for inst in F:
         tmp = []
-        for i, e in enumerate(f):
+        for i, e in enumerate(inst):
             if e >= 0:
                 continue
             tmp.append(v[i]+e < 0)
@@ -88,24 +89,24 @@ def isv(prog: list[list[int]], steps: int) -> str | None:
     return None
 
 
-def bsearch(prog: list[list[int]], limit: int = 1000) -> str | None:
+def bsearch(F: list[list[int]], limit: int = 1000) -> str | None:
     """ get the minimal certificate. intended for researching this decider. """
-    out = isv(prog, 0)
+    out = isv(F, 0)
     if out is not None:
         return out
-    out = isv(prog, limit)
+    out = isv(F, limit)
     if out is None:
         return out
     lo = 0
     hi = limit
     while lo < hi:
         mid = (lo+hi)//2
-        out = isv(prog, mid)
+        out = isv(F, mid)
         if out is None:
             lo = mid+1
         else:
             hi = mid
-    return isv(prog, hi)
+    return isv(F, hi)
 
 
 holdouts = parse_file('../holdout/sz20_902.txt')
@@ -114,18 +115,18 @@ print(f'attempt to solve {len(holdouts)} holdouts')
 print()
 
 holdouts2: list[list[list[int]]] = []
-for prog in holdouts:
-    result = isv(prog, 0)
+for F in holdouts:
+    result = isv(F, 0)
     if result is None:
-        result = isv(prog, 1000)
-    # result=bsearch(prog)
+        result = isv(F, 1000)
+    # result=bsearch(F)
     if result is not None:
-        print(f'{unparse_line(prog)}, NON-HALT: {result}')
+        print(f'{unparse_line(F)}, NON-HALT: {result}')
     else:
-        holdouts2.append(prog)
+        holdouts2.append(F)
 
 print()
 print(f'{len(holdouts2)} holdouts remaining')
 print()
-for prog in holdouts2:
-    print(unparse_line(prog))
+for F in holdouts2:
+    print(unparse_line(F))

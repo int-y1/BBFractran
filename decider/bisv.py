@@ -59,61 +59,62 @@ that uses this fact.
 '''
 
 
-def bisv_z3(prog: list[list[int]], u1: list[int], beep: int) -> str | None:
-    maxidx = len(prog[0])
+def bisv_z3(F: list[list[int]], u1: list[int], beep: int) -> str | None:
+    J = len(F)
+    I = len(F[0])
 
     s = z3.Solver()
     s.set("unsat_core", True)
-    c = [z3.Int(f'c_{j}') for j in range(len(prog))]
-    d = [z3.Int(f'd_{j}') for j in range(len(prog))]
-    u2 = [z3.Int(f'u2_{i}') for i in range(maxidx)]
-    u3 = [z3.Int(f'u3_{i}') for i in range(maxidx)]
+    c = [z3.Int(f'c_{j}') for j in range(J)]
+    d = [z3.Int(f'd_{j}') for j in range(J)]
+    u2 = [z3.Int(f'u2_{i}') for i in range(I)]
+    u3 = [z3.Int(f'u3_{i}') for i in range(I)]
     assumptions = []  # for s.unsat_core()
 
     # Let c, d in N^J.
-    for j in range(len(prog)):
+    for j in range(J):
         s.add(c[j] >= 0)
-    for j in range(len(prog)):
+    for j in range(J):
         s.add(d[j] >= 0)
     # u2 := u_k + sum_{j=0}^{J-1} c[j]*F[j]. In this function, u1 = u_k.
-    for i in range(maxidx):
-        s.add(u2[i] == u1[i]+sum(c[j]*prog[j][i] for j in range(len(prog))))
+    for i in range(I):
+        s.add(u2[i] == u1[i]+sum(c[j]*F[j][i] for j in range(J)))
     # u2[i] >= 0 for all i in {0, 1, ..., I-1}.
-    for i in range(maxidx):
+    for i in range(I):
         s.add(u2[i] >= 0)
     # "beep" is the next instruction used for u2.
-    for f in prog[:beep]:
+    for inst in F[:beep]:
         tmp = []
-        for i, v in enumerate(f):
-            if v >= 0:
+        for i, e in enumerate(inst):
+            if e >= 0:
                 continue
-            tmp.append(u2[i]+v < 0)
+            tmp.append(u2[i]+e < 0)
         assumptions.append(z3.Or(*tmp))
-    for i, v in enumerate(prog[beep]):
-        if v >= 0:
+    for i, e in enumerate(F[beep]):
+        if e >= 0:
             continue
-        assumptions.append(u2[i]+v >= 0)
+        assumptions.append(u2[i]+e >= 0)
     # d[beep] = 1.
     s.add(d[beep] == 1)
     # Define u3 := u_k + sum_{j=0}^{J-1} d[j]*F[j].
-    for i in range(maxidx):
-        s.add(u3[i] == u2[i]+sum(d[j]*prog[j][i] for j in range(len(prog))))
+    for i in range(I):
+        s.add(u3[i] == u2[i]+sum(d[j]*F[j][i] for j in range(J)))
     # u3[i] >= 0 for all i in {0, 1, ..., I-1}.
-    for i in range(maxidx):
+    for i in range(I):
         s.add(u3[i] >= 0)
     # u3 |- halt.
-    for f in prog:
+    for inst in F:
         tmp = []
-        for i, v in enumerate(f):
-            if v >= 0:
+        for i, e in enumerate(inst):
+            if e >= 0:
                 continue
-            tmp.append(u3[i]+v < 0)
+            tmp.append(u3[i]+e < 0)
         assumptions.append(z3.Or(*tmp))
 
     s_check = s.check(assumptions)
     # assert s_check != z3.unknown, "z3 couldn't determine sat/unsat"
     if s_check == z3.unsat:
-        return f'BISV(u1={u1}, beep={prog[beep]}, unsat_core={list(s.unsat_core())})'
+        return f'BISV(u1={u1}, beep={F[beep]}, unsat_core={list(s.unsat_core())})'
 
     # for debugging the probable-halt-certificate. this doesn't prove infinite.
     if 0:
@@ -126,52 +127,53 @@ def bisv_z3(prog: list[list[int]], u1: list[int], beep: int) -> str | None:
     return None
 
 
-def bisv(prog: list[list[int]], limit: int = 1000) -> str | None:
+def bisv(F: list[list[int]], limit: int = 1000) -> str | None:
     """ find (u1, beep) to use in bisv_z3 """
-    maxidx = len(prog[0])
+    J = len(F)
+    I = len(F[0])
 
     # run steps
-    cand_u1: list[None | list[int]] = [None]*len(prog)
-    u = [1]+[0]*(maxidx-1)
+    cand_u1: list[None | list[int]] = [None]*J
+    u = [1]+[0]*(I-1)
     for _ in range(limit):
-        for j, f in enumerate(prog):
-            for e0, e1 in zip(u, f):
+        for j, inst in enumerate(F):
+            for e0, e1 in zip(u, inst):
                 if e0+e1 < 0:
                     break
             else:
                 cand_u1[j] = list(u)
-                for i in range(maxidx):
-                    u[i] += f[i]
+                for i in range(I):
+                    u[i] += inst[i]
                 break
         else:
             return None  # halted, shouldn't happen
 
-    for beep in range(len(prog)):
+    for beep in range(J):
         u1 = cand_u1[beep]
         if u1 is None:
             continue
-        result = bisv_z3(prog, u1, beep)
+        result = bisv_z3(F, u1, beep)
         if result is not None:
             return result
 
     return None
 
 
-def bsearch(prog: list[list[int]], limit: int = 1000) -> str | None:
+def bsearch(F: list[list[int]], limit: int = 1000) -> str | None:
     """ get the minimal certificate. intended for researching this decider. """
-    out = bisv(prog, limit)
+    out = bisv(F, limit)
     if out is None:
         return out
     lo = 0
     hi = limit
     while lo < hi:
         mid = (lo+hi)//2
-        out = bisv(prog, mid)
+        out = bisv(F, mid)
         if out is None:
             lo = mid+1
         else:
             hi = mid
-    return bisv(prog, hi)
+    return bisv(F, hi)
 
 
 holdouts = parse_file('../holdout/sz20_6.txt')
@@ -180,16 +182,16 @@ print(f'attempt to solve {len(holdouts)} holdouts')
 print()
 
 holdouts2: list[list[list[int]]] = []
-for prog in holdouts:
-    result = bisv(prog, 1000)
-    # result = bsearch(prog)
+for F in holdouts:
+    result = bisv(F, 1000)
+    # result = bsearch(F)
     if result is not None:
-        print(f'{unparse_line(prog)}, NON-HALT: {result}')
+        print(f'{unparse_line(F)}, NON-HALT: {result}')
     else:
-        holdouts2.append(prog)
+        holdouts2.append(F)
 
 print()
 print(f'{len(holdouts2)} holdouts remaining')
 print()
-for prog in holdouts2:
-    print(unparse_line(prog))
+for F in holdouts2:
+    print(unparse_line(F))

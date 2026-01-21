@@ -82,44 +82,44 @@ Note: For n >= -min(F), the 3rd choice from Note PLM.5b becomes impossible.
 '''
 
 
-def graph_search2(prog: list[list[int]], EXP_LIM: int) -> str | None:
-    maxidx = len(prog[0])
+def graph_search2(F: list[list[int]], EXP_LIM: int) -> str | None:
+    I = len(F[0])
 
     # Lemma PLM.8: guarantee that the same inst is always used
-    for tmp in prog:
-        for e in tmp:
+    for inst in F:
+        for e in inst:
             if e+EXP_LIM < 0:
                 return None  # EXP_LIM is too small, please retry with a bigger value for EXP_LIM
 
     # graph theory stuff
-    q = [tuple([1]+[0]*(maxidx-1))]
+    q = [tuple([1]+[0]*(I-1))]  # initially, q only contains compress_n(u_0)
     vis = set(q)
     while q:
-        u = q.pop()
-        for inst in prog:
+        u = q.pop()  # this is compress_n(u)
+        for inst in F:
             for e0, e1 in zip(u, inst):
                 if e0+e1 < 0:
                     break
             else:
-                # inst matches, get next states
-                v0 = []
+                # use inst, find all possible compress_n(v)
+                v_choices = []
                 for e0, e1 in zip(u, inst):
-                    r0 = e0+e1
-                    while r0 >= 2*EXP_LIM:
-                        r0 -= EXP_LIM
-                    if r0 < EXP_LIM and e0 >= EXP_LIM:
-                        v0.append([r0, r0+EXP_LIM])
+                    e = e0+e1
+                    while e >= 2*EXP_LIM:
+                        e -= EXP_LIM
+                    if e < EXP_LIM and e0 >= EXP_LIM:
+                        v_choices.append([e, e+EXP_LIM])
                     else:
-                        v0.append([r0])
+                        v_choices.append([e])
                 # add to queue
-                for v in product(*v0):
+                for v in product(*v_choices):
                     if v in vis:
                         continue
                     vis.add(v)
                     q.append(v)
                 break
         else:
-            return None  # found a path from compress(u_0) to halt
+            return None  # found a path from compress_n(u_0) to halt
 
     # Theorem PLM.7 is applicable
     return f'GRAPH_SEARCH2({EXP_LIM})'
@@ -131,17 +131,17 @@ print(f'attempt to solve {len(holdouts)} holdouts')
 print()
 
 holdouts2: list[list[list[int]]] = []
-for prog in holdouts:
+for F in holdouts:
     for EXP_LIM in range(1, 13):
-        result = graph_search2(prog, EXP_LIM)
+        result = graph_search2(F, EXP_LIM)
         if result is not None:
-            print(f'{unparse_line(prog)}, NON-HALT: {result}')
+            print(f'{unparse_line(F)}, NON-HALT: {result}')
             break
     else:
-        holdouts2.append(prog)
+        holdouts2.append(F)
 
 print()
 print(f'{len(holdouts2)} holdouts remaining')
 print()
-for prog in holdouts2:
-    print(unparse_line(prog))
+for F in holdouts2:
+    print(unparse_line(F))

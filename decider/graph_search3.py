@@ -58,48 +58,49 @@ be more stable and easier to work with.
 '''
 
 
-def graph_search3(prog: list[list[int]], EXP_LIM: int) -> str | None:
-    maxidx = len(prog[0])
-    # graph theory stuff
-    u = []
-    for i in range(1, maxidx):
-        u += [0, i]
-    u += [1, 0]
-    q = [tuple(u)]
-    vis = set(q)
+def graph_search3(F: list[list[int]], EXP_LIM: int) -> str | None:
+    I = len(F[0])
 
     # Lemma PDLM.5: guarantee that the same inst is always used
     # Lemma PDLM.6: guarantee that 1 inst doesn't change order by much
-    min_e = 0
     max_e = 0
-    for tmp in prog:
-        for e in tmp:
-            min_e = min(min_e, e)
+    min_e = 0
+    for inst in F:
+        for e in inst:
             max_e = max(max_e, e)
-    if EXP_LIM < abs(min_e)+abs(max_e)+1:
+            min_e = min(min_e, e)
+    if EXP_LIM < abs(max_e)+abs(min_e)+1:
         return None
 
+    # graph theory stuff
+    u0 = []
+    for i in range(1, I):
+        u0 += [0, i]
+    u0 += [1, 0]
+    q = [tuple(u0)]  # initially, q only contains compress_n(u_0)
+    vis = set(q)
     while q:
         uu = q.pop()
+        # get representatives of uu=compress_n(u)
         u0 = []
-        for i in range(maxidx):
+        for i in range(I):
             if uu[i*2] < EXP_LIM:
                 u0.append([uu[i*2]])
             else:
                 u0.append([uu[i*2], uu[i*2]+EXP_LIM])
             u0.append([uu[i*2+1]])
         for u1 in product(*u0):
-            u = [0]*maxidx
+            u = [0]*I
             u[u1[1]] = u1[0]
-            for i in range(1, maxidx):
+            for i in range(1, I):
                 u[u1[i*2+1]] = u[u1[i*2-1]]+u1[i*2]
-            # finished calculating u
-            for inst in prog:
+            # u is a representative of uu
+            for inst in F:
                 for e0, e1 in zip(u, inst):
                     if e0+e1 < 0:
                         break
                 else:
-                    # inst matches, get next state
+                    # use inst, find vv=compress_n(v)
                     vv = []
                     value0 = 0
                     for value1, i in sorted((e[0]+e[1], i) for i, e in enumerate(zip(u, inst))):
@@ -114,7 +115,7 @@ def graph_search3(prog: list[list[int]], EXP_LIM: int) -> str | None:
                         q.append(vv)
                     break
             else:
-                return None  # found a path from compress(u_0) to halt
+                return None  # found a path from compress_n(u_0) to halt
 
     # Theorem PDLM.4 is applicable
     return f'GRAPH_SEARCH3({EXP_LIM})'
@@ -126,17 +127,17 @@ print(f'attempt to solve {len(holdouts)} holdouts')
 print()
 
 holdouts2: list[list[list[int]]] = []
-for prog in holdouts:
+for F in holdouts:
     for EXP_LIM in range(1, 13):
-        result = graph_search3(prog, EXP_LIM)
+        result = graph_search3(F, EXP_LIM)
         if result is not None:
-            print(f'{unparse_line(prog)}, NON-HALT: {result}')
+            print(f'{unparse_line(F)}, NON-HALT: {result}')
             break
     else:
-        holdouts2.append(prog)
+        holdouts2.append(F)
 
 print()
 print(f'{len(holdouts2)} holdouts remaining')
 print()
-for prog in holdouts2:
-    print(unparse_line(prog))
+for F in holdouts2:
+    print(unparse_line(F))
