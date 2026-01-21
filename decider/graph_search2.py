@@ -5,6 +5,8 @@ from utils import parse_file, unparse_line
 '''
 This is an implementation of Power Limit Mod. See Theorem PLM.7 for the main idea.
 
+Note: This decider only generates a certificate for n >= -min(F). This keeps the decider simple.
+
 ---
 
 Basic definitions:
@@ -35,6 +37,9 @@ Definition PLM.2 (Exp). Let n >= 1. Define Exp(n) to be these 2*n sets:
 Note: AP(*, 0) contains 1 element, and could be considered degenerate.
 Note: In the code, these 2*n sets are represented as an integer between 0 and 2*n-1.
 
+Example PLM.2b. Exp(3) consists of these 6 sets:
+{0}, {1}, {2}, {3, 6, 9, ...}, {4, 7, 10, ...}, {5, 8, 11, ...}
+
 Lemma PLM.3. Let n >= 1. Exp(n) partitions N. (https://en.wikipedia.org/wiki/Partition_of_a_set)
 Proof. Left as an exercise to the reader. (This looks like a tedious homework problem.)
 
@@ -53,7 +58,7 @@ Here are the cases you will need to consider:
 * Exponents that are >=n can have 1 or more choices:
   * The 1st choice is to stay >=n. This is always allowed.
   * The 2nd choice is to drop to <n. The exponent must decrease and cross the gap.
-  * The 3rd choice is to drop to <0. This can happen when n < -min(F). See Lemma PLM.8 for more.
+  * The 3rd choice is to drop to <0. This does not occur for n >= -min(F). See Lemma PLM.8 for more.
 
 Lemma PLM.6. Suppose u_0 |-* halt. Let n >= 1. G_n contains a path from compress_n(u_0) to halt.
 Proof. Let the path to halt be u_0 |- u_1 |- ... |- u_k |- halt. There is an edge from
@@ -74,7 +79,6 @@ Proof. Take a look at each exponent u[i]:
   negative. Therefore, this exponent will not make any instructions unavailable.
 Both u and u' have the same set of available instructions. The result follows. QED.
 Note: For n >= -min(F), the 3rd choice from Note PLM.5b becomes impossible.
-Note: If n is too small (that is, n < -min(F)), you can try a multiple of n instead.
 '''
 
 
@@ -85,7 +89,7 @@ def graph_search2(prog: list[list[int]], EXP_LIM: int) -> str | None:
     for tmp in prog:
         for e in tmp:
             if e+EXP_LIM < 0:
-                return None  # EXP_LIM is too small, use a bigger value for EXP_LIM
+                return None  # EXP_LIM is too small, please retry with a bigger value for EXP_LIM
 
     # graph theory stuff
     q = [tuple([1]+[0]*(maxidx-1))]

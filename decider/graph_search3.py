@@ -6,6 +6,9 @@ from utils import parse_file, unparse_line
 This is an implementation of Power Difference Limit Mod. The main idea is similar to
 graph_search2.py, and the main difference is the definition of compress_n.
 
+Note: This decider only generates a certificate for n > |max(F)| + |min(F)|. This keeps the decider
+simple.
+
 ---
 
 In graph_search2.py, read the following:
