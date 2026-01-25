@@ -119,7 +119,7 @@ for F in holdouts:
     result = isv(F, 0)
     if result is None:
         result = isv(F, 1000)
-    # result=bsearch(F)
+    # result = bsearch(F)
     if result is not None:
         print(f'{unparse_line(F)}, NON-HALT: {result}')
     else:

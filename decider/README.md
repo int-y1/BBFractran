@@ -18,5 +18,7 @@ List of deciders:
   * See [sligocki/etc/fractran/mask_lin_invar.py](https://github.com/sligocki/etc/blob/main/fractran/mask_lin_invar.py) for more details.
 * Beeping Integer Spanning Vectors (`bisv.py`).
   * Warning: this decider hasn't been reviewed / reproduced by the bbchallenge community. Please open an issue if you find a bug.
+* Beeping Permutation (`bp.py`).
+  * Warning: this decider hasn't been reviewed / reproduced by the bbchallenge community. Please open an issue if you find a bug.
 
 Historical note: `graph_search.py` implements the Power Limit decider, but this decider is very weak and not worth preserving.

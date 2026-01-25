@@ -4,7 +4,10 @@
 
 Each holdouts list is stored in a file called `sz(x)_(y).txt`, where `(x)` is the program size and `(y)` is the number of holdouts.
 
-TODO: A new decider "Beeping Integer Spanning Vectors" made progress on size 20 and above. In particular, it might solve 6/6 of sz20 (no Lean proofs needed), 142/345 of sz21, and 2321/5682 of sz22. However, as of Jan 3, 2025, this decider hasn't been reviewed / reproduced by the bbchallenge community. Please open an issue if you find a bug.
+TODO:
+
+* A new decider "Beeping Integer Spanning Vectors" (BISV) made progress on size 20 and above. In particular, it might solve 6/6 of sz20 (no Lean proofs needed), 142/345 of sz21, and 2321/5682 of sz22. However, as of Jan 23, 2026, this decider hasn't been reviewed / reproduced by the bbchallenge community. Please open an issue if you find a bug.
+* A new decider "Beeping Permutation" (BP) is a stronger version of BISV. In particular, it might solve 6/6 of sz20 (no Lean proofs needed), 205/345 of sz21, and 3679/5682 of sz22. However, as of Jan 23, 2026, this decider hasn't been reviewed / reproduced by the bbchallenge community. Please open an issue if you find a bug.
 
 ## Errata
 
@@ -60,6 +63,8 @@ The 6 holdouts were proved non-halting with a formal Lean proof. [link](https://
 
 345 holdouts remain.
 
+Also, see `sz21_140_unofficial.txt` for the output of the "Beeping Permutation" decider.
+
 ## Size 22
 
 * `sz22_91123.txt` (Dec 9, 2025): Direct output from `fractran20251116`.
@@ -72,6 +77,8 @@ The 6 holdouts were proved non-halting with a formal Lean proof. [link](https://
 * `sz22_5682.txt` (Jan 1, 2026): After applying the "Masked Linear Invariant" decider.
 
 5682 holdouts remain.
+
+Also, see `sz22_2003_unofficial.txt` for the output of the "Beeping Permutation" decider.
 
 ## Size 23
 
