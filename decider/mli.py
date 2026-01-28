@@ -192,7 +192,7 @@ def decide(prog: list[list[int]], init_steps: int) -> DecideResult:
 
 holdouts = parse_file('../holdout/sz20_29.txt')
 # sys.stdout = open('tmp.txt', 'w')
-print(f'attempt to solve {len(holdouts)} holdouts')
+print(f'running mli on {len(holdouts)} holdouts')
 print()
 
 holdouts2: list[list[list[int]]] = []

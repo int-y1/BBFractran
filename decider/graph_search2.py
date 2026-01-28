@@ -127,7 +127,7 @@ def graph_search2(F: list[list[int]], EXP_LIM: int) -> str | None:
 
 holdouts = parse_file('../holdout/sz19_231.txt')
 # sys.stdout = open('tmp.txt', 'w')
-print(f'attempt to solve {len(holdouts)} holdouts')
+print(f'running graph_search2 on {len(holdouts)} holdouts')
 print()
 
 holdouts2: list[list[list[int]]] = []

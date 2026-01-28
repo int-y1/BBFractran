@@ -178,7 +178,7 @@ def bsearch(F: list[list[int]], limit: int = 1000) -> str | None:
 
 holdouts = parse_file('../holdout/sz20_6.txt')
 # sys.stdout = open('tmp.txt', 'w')
-print(f'attempt to solve {len(holdouts)} holdouts')
+print(f'running bisv on {len(holdouts)} holdouts')
 print()
 
 holdouts2: list[list[list[int]]] = []

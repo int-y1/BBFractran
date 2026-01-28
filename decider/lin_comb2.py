@@ -74,7 +74,7 @@ def lin_comb2(F: list[list[int]]) -> str | None:
 
 holdouts = parse_file('../holdout/sz19_84.txt')
 # sys.stdout = open('tmp.txt', 'w')
-print(f'attempt to solve {len(holdouts)} holdouts')
+print(f'running lin_comb2 on {len(holdouts)} holdouts')
 print()
 
 holdouts2: list[list[list[int]]] = []
