@@ -1,6 +1,7 @@
+# python -m decider.lin_comb
 import sys
 from itertools import product
-from utils import parse_file, unparse_line
+from decider.utils import parse_file, unparse_line
 
 '''
 NOTE: This file is deprecated. Use lin_comb2.py instead.
@@ -44,8 +45,8 @@ def lin_comb(prog: list[list[int]], EXP_LIM: int) -> str | None:
     return None
 
 
-holdouts = parse_file('../holdout/sz19_84.txt')
-# sys.stdout = open('tmp.txt', 'w')
+holdouts = parse_file('holdout/sz19_84.txt')
+# sys.stdout = open('decider/tmp.txt', 'w')
 print(f'running lin_comb on {len(holdouts)} holdouts')
 print()
 

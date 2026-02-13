@@ -1,6 +1,7 @@
+# python -m decider.isv
 import sys
 import z3
-from utils import parse_file, unparse_line
+from decider.utils import parse_file, unparse_line
 
 '''
 This is an implementation of Integer Spanning Vectors using Z3. See Theorem ISV.3 for the main idea.
@@ -109,8 +110,8 @@ def bsearch(F: list[list[int]], limit: int = 1000) -> str | None:
     return isv(F, hi)
 
 
-holdouts = parse_file('../holdout/sz20_902.txt')
-# sys.stdout = open('tmp.txt', 'w')
+holdouts = parse_file('holdout/sz20_902.txt')
+# sys.stdout = open('decider/tmp.txt', 'w')
 print(f'running isv on {len(holdouts)} holdouts')
 print()
 

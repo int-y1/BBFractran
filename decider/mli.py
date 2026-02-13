@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+# python -m decider.mli
 # Original source: https://github.com/sligocki/etc/blob/a4343177e489c0c0e8d50f95615b171d652fcde1/fractran/mask_lin_invar.py
 # Some details have been modified to make this decider compatible with utils.py
 # Masked Linear Invariant (MLI)
@@ -9,7 +9,7 @@ from dataclasses import dataclass
 import sys
 import z3
 
-from utils import parse_file, unparse_line
+from decider.utils import parse_file, unparse_line
 
 
 @dataclass(frozen=True)
@@ -190,8 +190,8 @@ def decide(prog: list[list[int]], init_steps: int) -> DecideResult:
     return decide_pre(prog, state)
 
 
-holdouts = parse_file('../holdout/sz20_29.txt')
-# sys.stdout = open('tmp.txt', 'w')
+holdouts = parse_file('holdout/sz20_29.txt')
+# sys.stdout = open('decider/tmp.txt', 'w')
 print(f'running mli on {len(holdouts)} holdouts')
 print()
 

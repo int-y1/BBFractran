@@ -1,6 +1,7 @@
+# python -m decider.lin_comb2
 import sys
 import z3
-from utils import parse_file, unparse_line
+from decider.utils import parse_file, unparse_line
 
 '''
 This is an implementation of Linear Combination using Z3. See Definition LC.2 and Theorem LC.5 for
@@ -72,8 +73,8 @@ def lin_comb2(F: list[list[int]]) -> str | None:
     return None
 
 
-holdouts = parse_file('../holdout/sz19_84.txt')
-# sys.stdout = open('tmp.txt', 'w')
+holdouts = parse_file('holdout/sz19_84.txt')
+# sys.stdout = open('decider/tmp.txt', 'w')
 print(f'running lin_comb2 on {len(holdouts)} holdouts')
 print()
 

@@ -1,7 +1,8 @@
+# python -m decider.bp
 import sys
 import z3
 from itertools import permutations
-from utils import parse_file, unparse_line
+from decider.utils import parse_file, unparse_line
 
 '''
 This is an implementation of Beeping Permutation using Z3. BP is an extended version of BISV.
@@ -221,8 +222,8 @@ def bsearch(F: list[list[int]], limit: int = 1000) -> str | None:
     return bp(F, hi)
 
 
-holdouts = parse_file('../holdout/sz21_345.txt')
-# sys.stdout = open('tmp.txt', 'w')
+holdouts = parse_file('holdout/sz21_345.txt')
+# sys.stdout = open('decider/tmp.txt', 'w')
 print(f'running bp on {len(holdouts)} holdouts')
 print()
 

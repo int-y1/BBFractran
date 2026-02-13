@@ -1,6 +1,7 @@
+# python -m decider.graph_search3
 import sys
 from itertools import product
-from utils import parse_file, unparse_line
+from decider.utils import parse_file, unparse_line
 
 '''
 This is an implementation of Power Difference Limit Mod. The main idea is similar to
@@ -121,8 +122,8 @@ def graph_search3(F: list[list[int]], EXP_LIM: int) -> str | None:
     return f'GRAPH_SEARCH3({EXP_LIM})'
 
 
-holdouts = parse_file('../holdout/sz20_279.txt')
-# sys.stdout = open('tmp.txt', 'w')
+holdouts = parse_file('holdout/sz20_279.txt')
+# sys.stdout = open('decider/tmp.txt', 'w')
 print(f'running graph_search3 on {len(holdouts)} holdouts')
 print()
 

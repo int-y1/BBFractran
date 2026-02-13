@@ -1,6 +1,7 @@
+# python -m decider.graph_search2
 import sys
 from itertools import product
-from utils import parse_file, unparse_line
+from decider.utils import parse_file, unparse_line
 
 '''
 This is an implementation of Power Limit Mod. See Theorem PLM.7 for the main idea.
@@ -125,8 +126,8 @@ def graph_search2(F: list[list[int]], EXP_LIM: int) -> str | None:
     return f'GRAPH_SEARCH2({EXP_LIM})'
 
 
-holdouts = parse_file('../holdout/sz19_231.txt')
-# sys.stdout = open('tmp.txt', 'w')
+holdouts = parse_file('holdout/sz19_231.txt')
+# sys.stdout = open('decider/tmp.txt', 'w')
 print(f'running graph_search2 on {len(holdouts)} holdouts')
 print()
 
