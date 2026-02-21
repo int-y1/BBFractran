@@ -8,6 +8,18 @@ Busy beaver for Fractran
 
 ## To-do list
 
+Write a new decider. The decider should satisfy these requirements:
+
+* When given a Fractran program in `sz22_2003_unofficial.txt`, the decider must return either "halt", "non-halt", or "undecided".
+* When given a Fractran program in `sz22_halted_689.txt`, the decider must return either "halt" or "undecided". In particular, the decider must not return "non-halt".
+* The decider must decide at least 1 holdout in `sz22_2003_unofficial.txt`.
+
+There are deciders in `decider/*.py`. However, these deciders won't decide any holdouts in `sz22_2003_unofficial.txt`. You will have to either strengthen an existing decider or write a new decider from scratch.
+
+(TODO: see if AI can write a decider)
+
+---
+
 Write a decider that can prove these 7 FMs to be non-halting:
 ```
 [20/3, 9/35, 1/20, 49/2, 3/7]
@@ -22,12 +34,6 @@ Write a decider that can prove these 7 FMs to be non-halting:
 This decider would make "Petri net + FAST" redundant.
 
 I have no idea what this decider would look like.
-
----
-
-Write a script that reads a holdouts list and creates Lean files with `sorry` proofs. For example, if the input is `sz20_6.txt`, the 6 output files will look something like <https://github.com/int-y1/proofs/tree/master/BBfLean/Size20>.
-
-I will work on this soon.
 
 ---
 
