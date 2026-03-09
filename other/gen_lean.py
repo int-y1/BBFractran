@@ -31,6 +31,8 @@ TODO: After finishing the proof, replace this paragraph with one of:
 * This Fractran program halts.
 -/
 
+namespace {holdout_file.capitalize()}_{holdout_number}
+
 def Q := {' × '.join('ℕ' for _ in range(I))}
 def c₀ : Q := ⟨{', '.join('1' if i == 0 else '0' for i in range(I))}⟩
 def fm : Q → Option Q := fun q ↦ match q with
