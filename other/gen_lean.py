@@ -29,6 +29,8 @@ Vector representation:
 TODO: After finishing the proof, replace this paragraph with one of:
 * This Fractran program doesn't halt.
 * This Fractran program halts.
+
+Author: (replace this with the author of the proof)
 -/
 
 namespace {holdout_file.capitalize()}_{holdout_number}
