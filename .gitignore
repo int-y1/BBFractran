@@ -45,3 +45,4 @@ enumerate/fractran.txt
 */__pycache__
 decider/tmp.txt
 other/lean/*.lean
+other/lean/*/*.lean
