@@ -60,10 +60,9 @@ The 6 holdouts were proved non-halting with a formal Lean proof. [link](https://
 * `sz21_597.txt` (Dec 22, 2025): After applying the "Power Difference Limit Mod" decider with higher parameters. (The strategy is the same as `sz22_9829.txt`.)
 * `sz21_553.txt` (Dec 31, 2025): After applying the "Integer Spanning Vectors" decider.
 * `sz21_345.txt` (Jan 1, 2026): After applying the "Masked Linear Invariant" decider.
+* `sz21_140_unofficial.txt` (Jan 24, 2026): After applying the "Beeping Permutation" decider. (See warning above about BP.)
 
-345 holdouts remain.
-
-Also, see `sz21_140_unofficial.txt` for the output of the "Beeping Permutation" decider.
+On Mar 25, 2026, the 140 holdouts were proved non-halting after prompting Claude Opus 4.6 for Lean proofs. See <https://github.com/int-y1/proofs/blob/master/BBfLean/Size21Summary.lean>.
 
 ## Size 22
 
@@ -75,13 +74,15 @@ Also, see `sz21_140_unofficial.txt` for the output of the "Beeping Permutation" 
 * `sz22_9829.txt` (Dec 21, 2025): After applying the "Power Difference Limit Mod" decider with higher parameters. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1452353731449327820)
 * `sz22_8352.txt` (Dec 31, 2025): After applying the "Integer Spanning Vectors" decider.
 * `sz22_5682.txt` (Jan 1, 2026): After applying the "Masked Linear Invariant" decider.
+* `sz22_2003_unofficial.txt` (Jan 24, 2026): After applying the "Beeping Permutation" decider. (See warning above about BP.)
+* `sz22_3.txt` (Apr 3, 2026): After prompting Claude Opus 4.6 for Lean proofs. See <https://github.com/int-y1/proofs/blob/master/BBfLean/Size22Summary.lean>.
 
-5682 holdouts remain.
+3 holdouts remain. These 3 holdouts are the [Fenrir family](https://wiki.bbchallenge.org/wiki/Fractran#Fenrir).
 
-Also, see `sz22_2003_unofficial.txt` for the output of the "Beeping Permutation" decider.
+TODO: Create `sz22_halted_692.txt`.
 
 ## Size 23
 
-Not needed yet. Size 22 still needs to be explored further.
+TODO: Prepare `fractran20251116` for size 23.
 
 Benchmark info for `fractran20251116` on my laptop: sz19 in 895s, sz20 in 4880s, sz21 in 30343s, sz22 in 172468s. sz23 might take 12 days.
