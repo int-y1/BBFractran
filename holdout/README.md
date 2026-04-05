@@ -1,6 +1,6 @@
 # Holdouts lists
 
-`champions.txt` is a list of champions by increasing order. All of these machines halt. Champions of size 20 and greater have not been proven yet. The champions of size 22 might be replaced by a better champion.
+`champions.txt` is a list of champions by increasing order. All of these machines halt. Champions of size 22 and greater have not been proven yet. (TODO: Find champions of size 23, then say "The champion(s) of size 23 might be replaced by a better champion.")
 
 Each holdouts list is stored in a file called `sz(x)_(y).txt`, where `(x)` is the program size and `(y)` is the number of holdouts.
 
@@ -55,14 +55,16 @@ The 6 holdouts were proved non-halting with a formal Lean proof. [link](https://
 
 * `sz21_9427.txt` (Nov 16, 2025): Direct output from `fractran20251116`. This enumeration attempt also produced `sz19_48.txt` and `sz20_902.txt`.
 * `sz21_798.txt` (Dec 11, 2025): After applying the "Spanning Vectors" and "Power Difference Limit Mod" decider. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1448740671077748847)
-* `sz21_775.txt` (Dec 11, 2025): After running all machines to 10^9 steps ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1448784141788250183) and consider only sz21 machines). 3 machines took 31957632 steps to halt, and this was the record. (TODO: Run all machines in `sz21_798.txt` to 10^11 steps)
+* `sz21_775.txt` (Dec 11, 2025): After running all machines to 10^9 steps ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1448784141788250183) and consider only sz21 machines). 3 machines took 31957632 steps to halt, and this was the record.
 * `sz21_602.txt` (Dec 11, 2025): Convert to [Petri net](https://en.wikipedia.org/wiki/Petri_net), apply [FAST](https://lsv.ens-paris-saclay.fr/Software/fast/), and remove those that are infinite (i.e. non-halting). ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1442928279995809882), but 15 machines were added)
 * `sz21_597.txt` (Dec 22, 2025): After applying the "Power Difference Limit Mod" decider with higher parameters. (The strategy is the same as `sz22_9829.txt`.)
 * `sz21_553.txt` (Dec 31, 2025): After applying the "Integer Spanning Vectors" decider.
 * `sz21_345.txt` (Jan 1, 2026): After applying the "Masked Linear Invariant" decider.
 * `sz21_140_unofficial.txt` (Jan 24, 2026): After applying the "Beeping Permutation" decider. (See warning above about BP.)
 
-On Mar 25, 2026, the 140 holdouts were proved non-halting after prompting Claude Opus 4.6 for Lean proofs. See <https://github.com/int-y1/proofs/blob/master/BBfLean/Size21Summary.lean>.
+On Mar 25, 2026, the 140 holdouts were proved non-halting by prompting Claude Opus 4.6 for Lean proofs. See <https://github.com/int-y1/proofs/blob/master/BBfLean/Size21Summary.lean>.
+
+TODO: Create `sz21_halted_23.txt`.
 
 ## Size 22
 
@@ -76,10 +78,9 @@ On Mar 25, 2026, the 140 holdouts were proved non-halting after prompting Claude
 * `sz22_5682.txt` (Jan 1, 2026): After applying the "Masked Linear Invariant" decider.
 * `sz22_2003_unofficial.txt` (Jan 24, 2026): After applying the "Beeping Permutation" decider. (See warning above about BP.)
 * `sz22_3.txt` (Apr 3, 2026): After prompting Claude Opus 4.6 for Lean proofs. See <https://github.com/int-y1/proofs/blob/master/BBfLean/Size22Summary.lean>.
+  * See `sz22_halted_692.txt` (Apr 5, 2026) for a list of machines that took more than 10000 steps to halt (689 machines from `sz22_halted_689.txt`, 3 new machines found by Claude Opus 4.6). The format of each line is `<machine> <steps to halt>`.
 
 3 holdouts remain. These 3 holdouts are the [Fenrir family](https://wiki.bbchallenge.org/wiki/Fractran#Fenrir).
-
-TODO: Create `sz22_halted_692.txt`.
 
 ## Size 23
 
