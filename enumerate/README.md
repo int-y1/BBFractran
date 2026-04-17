@@ -10,6 +10,7 @@ These commands will build and run the program. `ac_old` requires GMP to be insta
 ./ac_old fractran20251107
 ./ac fractran20251113
 ./ac fractran20251116
+./ac fractran20260416
 ```
 
 The program will write to 2 locations:
@@ -58,3 +59,15 @@ It's like `fractran20251113` with these additions:
 * Multithreading is added. See `THREADS`.
 * A new decider `lin_comb` is added to the `solve` pipeline.
 * `enumerate` is made more efficient. See the new parameter `newcol`. Essentially, I moved a part of "check if program can be made complete" into `enumerate`.
+
+## Explanation of `fractran20260416`
+
+It's like `fractran20251116` with improved support for work units:
+
+* Only enumerate 1 size. (This is a downgrade to keep the logs simple.)
+* Use all threads except 1.
+* Improved logs for work units.
+
+The enumeration speed is about the same as `fractran20251116`.
+
+TODO: Allow the user to specify a range of work units to run. (I'll wait until this feature is needed.)
