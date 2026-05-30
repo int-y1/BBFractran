@@ -8,10 +8,6 @@ Busy beaver for Fractran
 
 ## To-do list
 
-Enumerate sz23.
-
----
-
 Look at Minsky machines.
 
 ---

@@ -84,6 +84,4 @@ TODO: Create `sz21_halted_23.txt`.
 
 ## Size 23
 
-TODO: Prepare `fractran20251116` for size 23.
-
-Benchmark info for `fractran20251116` on my laptop: sz19 in 895s, sz20 in 4880s, sz21 in 30343s, sz22 in 172468s. sz23 might take 12 days.
+* `sz23_790335.txt` (May 29, 2026): Direct output from `fractran20251116` (13.4 hours on 95 threads) and `fractran20260416` (13.2 hours on 88 threads). Both enumerators agreed.
