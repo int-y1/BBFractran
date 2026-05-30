@@ -1,10 +1,12 @@
 # python -m decider.multithread
 import queue
-import time
+from decider.bp import bp
+from decider.graph_search3 import graph_search3 as pdlm
 from decider.isv import isv
 from decider.utils import parse_file, unparse_line
-from os import cpu_count
 from multiprocessing import Manager, Process
+from os import cpu_count
+from time import time
 
 '''
 Run other deciders with multithreading.
@@ -15,6 +17,9 @@ def run_decider(F: list[list[int]]) -> str | None:
     result = None
     result = isv(F, 0) if result is None else result
     result = isv(F, 1000) if result is None else result
+    for EXP_LIM in range(1, 13):
+        result = pdlm(F, EXP_LIM) if result is None else result
+    result = bp(F) if result is None else result
     return result
 
 
@@ -34,10 +39,10 @@ def worker(holdouts_in: queue.Queue, holdouts_out1: queue.Queue, holdouts_out2: 
 
 
 if __name__ == '__main__':
-    time0 = time.time()
+    time0 = time()
     print('setup starting...')
     threads = max(2, (cpu_count() or 1)*9//10)
-    holdouts = parse_file('holdout/sz22_9829.txt')
+    holdouts = parse_file('holdout/sz21_9427.txt')
     print(f'running {threads} threads on {len(holdouts)} holdouts')
 
     with Manager() as manager:
@@ -49,7 +54,7 @@ if __name__ == '__main__':
         for i, F in enumerate(holdouts):
             holdouts_in.put((i, F))
 
-        time1 = time.time()
+        time1 = time()
         print(f'setup done: {time1-time0}')
         print('threads starting...')
         tt = [Process(target=worker, args=(holdouts_in, holdouts_out1,
@@ -59,7 +64,7 @@ if __name__ == '__main__':
         holdouts_in.join()
         for t in tt:
             t.join()
-        time2 = time.time()
+        time2 = time()
         print(f'threads done: {time2-time1}')
         print('output file creation starting...')
 
@@ -87,5 +92,5 @@ if __name__ == '__main__':
             for _, F in out2:
                 f.write(f'{unparse_line(F)}\n')
 
-        time3 = time.time()
+        time3 = time()
         print(f'output file creation done: {time3-time2}')
