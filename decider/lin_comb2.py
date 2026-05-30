@@ -73,21 +73,22 @@ def lin_comb2(F: list[list[int]]) -> str | None:
     return None
 
 
-holdouts = parse_file('holdout/sz19_84.txt')
-# sys.stdout = open('decider/tmp.txt', 'w')
-print(f'running lin_comb2 on {len(holdouts)} holdouts')
-print()
+if __name__ == '__main__':
+    holdouts = parse_file('holdout/sz19_84.txt')
+    # sys.stdout = open('decider/tmp.txt', 'w')
+    print(f'running lin_comb2 on {len(holdouts)} holdouts')
+    print()
 
-holdouts2: list[list[list[int]]] = []
-for F in holdouts:
-    result = lin_comb2(F)
-    if result is not None:
-        print(f'{unparse_line(F)}, NON-HALT: {result}')
-    else:
-        holdouts2.append(F)
+    holdouts2: list[list[list[int]]] = []
+    for F in holdouts:
+        result = lin_comb2(F)
+        if result is not None:
+            print(f'{unparse_line(F)}, NON-HALT: {result}')
+        else:
+            holdouts2.append(F)
 
-print()
-print(f'{len(holdouts2)} holdouts remaining')
-print()
-for F in holdouts2:
-    print(unparse_line(F))
+    print()
+    print(f'{len(holdouts2)} holdouts remaining')
+    print()
+    for F in holdouts2:
+        print(unparse_line(F))

@@ -190,21 +190,22 @@ def decide(prog: list[list[int]], init_steps: int) -> DecideResult:
     return decide_pre(prog, state)
 
 
-holdouts = parse_file('holdout/sz20_29.txt')
-# sys.stdout = open('decider/tmp.txt', 'w')
-print(f'running mli on {len(holdouts)} holdouts')
-print()
+if __name__ == '__main__':
+    holdouts = parse_file('holdout/sz20_29.txt')
+    # sys.stdout = open('decider/tmp.txt', 'w')
+    print(f'running mli on {len(holdouts)} holdouts')
+    print()
 
-holdouts2: list[list[list[int]]] = []
-for prog in holdouts:
-    result = decide(prog, 1000)
-    if result.infinite:
-        print(f'{unparse_line(prog)}, NON-HALT: {result}')
-    else:
-        holdouts2.append(prog)
+    holdouts2: list[list[list[int]]] = []
+    for prog in holdouts:
+        result = decide(prog, 1000)
+        if result.infinite:
+            print(f'{unparse_line(prog)}, NON-HALT: {result}')
+        else:
+            holdouts2.append(prog)
 
-print()
-print(f'{len(holdouts2)} holdouts remaining')
-print()
-for prog in holdouts2:
-    print(unparse_line(prog))
+    print()
+    print(f'{len(holdouts2)} holdouts remaining')
+    print()
+    for prog in holdouts2:
+        print(unparse_line(prog))

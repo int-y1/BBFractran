@@ -12,9 +12,10 @@ Run other deciders with multithreading.
 
 
 def run_decider(F: list[list[int]]) -> str | None:
-    # return isv(F, 0)
-    return isv(F, 1000)
-    # return None
+    result = None
+    result = isv(F, 0) if result is None else result
+    result = isv(F, 1000) if result is None else result
+    return result
 
 
 def worker(holdouts_in: queue.Queue, holdouts_out1: queue.Queue, holdouts_out2: queue.Queue):
@@ -33,6 +34,8 @@ def worker(holdouts_in: queue.Queue, holdouts_out1: queue.Queue, holdouts_out2: 
 
 
 if __name__ == '__main__':
+    time0 = time.time()
+    print('setup starting...')
     threads = max(2, (cpu_count() or 1)*9//10)
     holdouts = parse_file('holdout/sz22_9829.txt')
     print(f'running {threads} threads on {len(holdouts)} holdouts')
@@ -47,6 +50,8 @@ if __name__ == '__main__':
             holdouts_in.put((i, F))
 
         time1 = time.time()
+        print(f'setup done: {time1-time0}')
+        print('threads starting...')
         tt = [Process(target=worker, args=(holdouts_in, holdouts_out1,
                                            holdouts_out2), name=f'worker-{i}') for i in range(threads)]
         for t in tt:
@@ -55,7 +60,8 @@ if __name__ == '__main__':
         for t in tt:
             t.join()
         time2 = time.time()
-        print(f'elapsed time: {time2-time1}')
+        print(f'threads done: {time2-time1}')
+        print('output file creation starting...')
 
         out1 = []
         while True:
@@ -80,3 +86,6 @@ if __name__ == '__main__':
         with open('decider/tmp_multithread_2.txt', 'w') as f:
             for _, F in out2:
                 f.write(f'{unparse_line(F)}\n')
+
+        time3 = time.time()
+        print(f'output file creation done: {time3-time2}')
