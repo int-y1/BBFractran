@@ -46,3 +46,4 @@ enumerate/fractran.txt
 decider/tmp.txt
 other/lean/*.lean
 other/lean/*/*.lean
+**/tmp*
