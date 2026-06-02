@@ -87,6 +87,7 @@ TODO: Create `sz21_halted_23.txt`.
 * `sz23_790335.txt` (May 29, 2026): Direct output from `fractran20251116` (13.4 hours on 95 threads) and `fractran20260416` (13.2 hours on 88 threads). Both enumerators agreed.
 * `sz23_94367.txt` (May 31, 2026): After applying the "Integer Spanning Vectors" decider up to `ISV(1000)`, and the "Power Difference Limit Mod" decider up to `GRAPH_SEARCH3(12)`.
 * `sz23_29250.txt` (May 31, 2026): After applying the "Beeping Permutation" decider up to k = 1000. (See warning above about BP.)
+* `sz23_29188.txt` (Jun 1, 2026): After applying the "Power Difference Limit Mod" decider up to `GRAPH_SEARCH3(24)`. (There were 6 machines decided by `GRAPH_SEARCH3(24)`.)
 
 TODO: Find halting machines in `sz23_29250.txt`.
 
