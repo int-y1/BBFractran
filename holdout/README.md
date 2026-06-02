@@ -89,7 +89,7 @@ TODO: Create `sz21_halted_23.txt`.
 * `sz23_29250.txt` (May 31, 2026): After applying the "Beeping Permutation" decider up to k = 1000. (See warning above about BP.)
 * `sz23_29188.txt` (Jun 1, 2026): After applying the "Power Difference Limit Mod" decider up to `GRAPH_SEARCH3(24)`. (There were 6 machines decided by `GRAPH_SEARCH3(24)`.)
 * `sz23_28100.txt` (Jun 1, 2026): After applying an improved version of "Beeping Permutation". (See warning above about BP.)
-
-TODO: Find halting machines in `sz23_29250.txt`.
+* `sz22_21320.txt` (Jun 1, 2026): After simulating machines until halt. ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1510804448090521650)) (Thanks @Shawn Ligocki for simulating the machines)
+  * See `sz23_halted_6780.txt` for a list of machines that halted.
 
 TODO: Find a machine in `sz23_790335.txt`, not in `sz23_29250.txt`, and halts. (If this machine exists, that means there is a bug in my pipeline.)
