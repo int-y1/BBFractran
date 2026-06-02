@@ -1,6 +1,6 @@
 # python -m decider.multithread
 import queue
-from decider.bp import bp
+from decider.bp import bp_prefix
 from decider.graph_search3 import graph_search3 as pdlm
 from decider.isv import isv
 from decider.utils import parse_file, unparse_line
@@ -19,7 +19,7 @@ def run_decider(F: list[list[int]]) -> str | None:
     result = isv(F, 1000) if result is None else result
     for EXP_LIM in range(1, 13):
         result = pdlm(F, EXP_LIM) if result is None else result
-    result = bp(F) if result is None else result
+    result = bp_prefix(F) if result is None else result
     return result
 
 

@@ -199,27 +199,38 @@ def bp(F: list[list[int]], k: int = 1000) -> str | None:
             if result == z3.sat:
                 return None  # failed to use Theorem BP.3
 
-    return f'BP(k={k}, uk={uk})'  # Theorem BP.3 succeeded
+    # Theorem BP.3 succeeded
+    return f'BP(prefix_size={len(F)}, k={k}, uk={uk})'
+
+
+def bp_prefix(F: list[list[int]], k: int = 1000) -> str | None:
+    """ If a prefix of F is non-halting, then F is non-halting. """
+    J = len(F)
+    for j in range(1, J+1):
+        out = bp(F[:j], k)
+        if out is not None:
+            return out
+    return None
 
 
 def bsearch(F: list[list[int]], limit: int = 1000) -> str | None:
     """ get the minimal certificate. intended for researching this decider. """
-    out = bp(F, 0)
+    out = bp_prefix(F, 0)
     if out is not None:
         return out
-    out = bp(F, limit)
+    out = bp_prefix(F, limit)
     if out is None:
         return out
     lo = 0
     hi = limit
     while lo < hi:
         mid = (lo+hi)//2
-        out = bp(F, mid)
+        out = bp_prefix(F, mid)
         if out is None:
             lo = mid+1
         else:
             hi = mid
-    return bp(F, hi)
+    return bp_prefix(F, hi)
 
 
 if __name__ == '__main__':
@@ -230,7 +241,7 @@ if __name__ == '__main__':
 
     holdouts2: list[list[list[int]]] = []
     for F in holdouts:
-        result = bp(F, 1000)
+        result = bp_prefix(F, 1000)
         # result = bsearch(F)
         if result is not None:
             print(f'{unparse_line(F)}, NON-HALT: {result}')
