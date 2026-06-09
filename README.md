@@ -8,7 +8,7 @@ Busy beaver for Fractran
 
 ## To-do list
 
-Look at Minsky machines.
+Work more on register machines (see `register/`).
 
 ---
 
