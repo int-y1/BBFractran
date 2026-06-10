@@ -3,7 +3,8 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-const int LIM=9; // max sz to enumerate
+const int LIM=8; // max sz to enumerate
+const bool USE_RESULTS=1; // use the fact that MBB(7) = 231 (TODO: improve the deciders so that this isn't needed)
 
 // instructions are numbered 1 (A), 2 (B), 3 (C), ...
 // instruction 0 represents undefined
@@ -104,6 +105,74 @@ bool translated_cycle(const program& prog,fullstate s0,fullstate s1,fullstate s2
     return 1;
 }
 
+/*
+1 = cannot halt. 0 = unsure.
+idea of graph_search2 (similar to fractran's "power limit mod")
+
+* LIM is the register limit
+* do a graph search, but limit the registers to 2*LIM different groups
+  * split into 2 groups, <LIM and >=LIM
+  * split into LIM groups, the groups are mod LIM
+  * (the code uses the numbers 0,1,...,2*LIM-1 to represent these groups)
+* if halting never occurs, the program runs forever
+
+*/
+bool graph_search2(const program& prog,int maxreg,int lim) {
+    vector<fullstate> q;
+    set<fullstate> vis;
+    {
+        fullstate s{1,vector<ll>(maxreg+1)};
+        q.push_back(s);
+        vis.insert(s);
+    }
+    // note: fractran's "guarantee that the same inst is always used" doesn't apply
+    assert(lim>=1);
+    while (!q.empty()) {
+        fullstate s=q.back();
+        q.pop_back();
+        bool found=0; // found halt state?
+        vector<fullstate> ss{}; // next states
+        visit(overloaded{
+            [&s,&found,&lim,&ss](instruction_inc inst) {
+                auto [c,n]=inst;
+                if (n==0) found=1;
+                else {
+                    fullstate t{n,s.second};
+                    t.second[c]++;
+                    if (t.second[c]==2*lim) t.second[c]=lim;
+                    ss.push_back(t);
+                }
+            },
+            [&s,&found,&lim,&ss](instruction_dec inst) {
+                auto [c,n,m]=inst;
+                if (s.second[c]) {
+                    if (n==0) found=1;
+                    else {
+                        fullstate t{n,s.second};
+                        t.second[c]--;
+                        ss.push_back(t);
+                        if (t.second[c]==lim-1) {
+                            t.second[c]+=lim;
+                            ss.push_back(t);
+                        }
+                    }
+                }
+                else {
+                    if (m==0) found=1;
+                    else ss.push_back(fullstate{m,s.second});
+                }
+            }
+        },prog.at(s.first-1));
+        if (found) return 0;
+        for (auto& t:ss) {
+            if (vis.count(t)) continue;
+            vis.insert(t);
+            q.push_back(t);
+        }
+    }
+    return 1;
+}
+
 // returns programs that are worth exploring further
 vector<ll> cnt;
 ll busy1=0; // steps
@@ -138,6 +207,7 @@ vector<program> solve(int sz_max,const program& prog) {
     vector<fullstate> history;
     pair<int,int> last_transition;
     for (ll steps=0; steps<10000;) {
+        if (USE_RESULTS && steps==231+2 && prog.size()<=7) return {}; // nonhalt
         history.push_back(s);
         if (steps>=3) {
             if (translated_cycle(prog,history[steps-steps/3-steps/3],history[steps-steps/3],s)) {
@@ -189,33 +259,35 @@ vector<program> solve(int sz_max,const program& prog) {
             return expand_tnf(prog,last_transition,maxreg);
         }
     }
+    // decider: graph_search2
+    cnt[cntstep++]++;
+    for (int lim=5; lim<=8; lim++) {
+        if (graph_search2(prog,maxreg,lim)) return {}; // nonhalt
+    }
     // hard program
     cnt[cntstep++]++;
     vector<program> out;
-    // TODO: uncomment
-    /*
     printf("  HOLDOUT %s\n",program_str(prog).c_str());
     fflush(stdout);
     for (int i=1; i<=prog.size(); i++) {
         visit(overloaded{
-            [&out](instruction_inc inst) {
+            [&out,&prog,&i,&maxreg](instruction_inc inst) {
                 auto [c,n]=inst;
                 if (n==0) {
-                    for (auto& prog2:expand_tnf(prog,{i,0})) out.push_back(prog2);
+                    for (auto& prog2:expand_tnf(prog,{i,0},maxreg)) out.push_back(prog2);
                 }
             },
-            [&out](instruction_dec inst) {
+            [&out,&prog,&i,&maxreg](instruction_dec inst) {
                 auto [c,n,m]=inst;
                 if (n==0) {
-                    for (auto& prog2:expand_tnf(prog,{i,1})) out.push_back(prog2);
+                    for (auto& prog2:expand_tnf(prog,{i,1},maxreg)) out.push_back(prog2);
                 }
                 if (m==0) {
-                    for (auto& prog2:expand_tnf(prog,{i,2})) out.push_back(prog2);
+                    for (auto& prog2:expand_tnf(prog,{i,2},maxreg)) out.push_back(prog2);
                 }
             }
         },prog.at(i-1));
     }
-    */
     return out;
 }
 

@@ -6,7 +6,7 @@ Register Busy Beaver
 
 ## To-do list
 
-Write a better enumerator for MBB(n). Modify Fractran's GRAPH_SEARCH2 to fit the enumerator.
+Improve the enumerator for MBB(n).
 
 ---
 
