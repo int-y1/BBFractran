@@ -12,14 +12,15 @@ def get_fractran_row(sz: int, pos: list[int | None], neg: list[int | None]) -> l
     return inst
 
 
-def parse_line(li: str, accurate_steps: bool = True) -> list[list[int]]:
+def parse_line(li: str) -> list[list[int]]:
     """
     :param li: An RM in the typical format.
-    :param accurate_steps: Should the RM and FM halt in the same number of steps?
     :return: An FM in vector representation. All vectors have the same length.
 
-    accurate_steps only matters when the RM can go to the same instruction.
-    This function also (informally) proves MBB(n) <= BBf(10*n).
+    In this function, the input RM and output FM will halt in the same number of steps.
+    The downside is that the output FM is unoptimized. Use parse_line_opt to get a better output FM.
+
+    This function (informally) proves MBB(n) <= BBf(14*n).
     Warning: The RM must have <=26 instructions and <=10 registers.
     """
     # extract RM
@@ -50,12 +51,8 @@ def parse_line(li: str, accurate_steps: bool = True) -> list[list[int]]:
             F.append(get_fractran_row(
                 scratch, [to_col[c], n_col], [to_col[i]]))
             if same:  # add mirror instruction
-                if accurate_steps:
-                    F.append(get_fractran_row(
-                        scratch, [to_col[c], to_col[n]], [scratch-1]))
-                else:
-                    F.append(get_fractran_row(
-                        scratch, [to_col[i]], [scratch-1]))
+                F.append(get_fractran_row(
+                    scratch, [to_col[c], to_col[n]], [scratch-1]))
         elif len(inst) == 4:
             c, op, n, m = inst
             assert '0' <= c <= '9', 'malformed rm'
@@ -72,14 +69,10 @@ def parse_line(li: str, accurate_steps: bool = True) -> list[list[int]]:
             F.append(get_fractran_row(
                 scratch, [m_col], [to_col[i]]))
             if same:  # add mirror instruction
-                if accurate_steps:
-                    F.append(get_fractran_row(
-                        scratch, [to_col[n]], [to_col[c], scratch-1]))
-                    F.append(get_fractran_row(
-                        scratch, [to_col[m]], [scratch-1]))
-                else:
-                    F.append(get_fractran_row(
-                        scratch, [to_col[i]], [scratch-1]))
+                F.append(get_fractran_row(
+                    scratch, [to_col[n]], [to_col[c], scratch-1]))
+                F.append(get_fractran_row(
+                    scratch, [to_col[m]], [scratch-1]))
         else:
             assert False, 'malformed rm'
     for inst in F:
@@ -87,6 +80,27 @@ def parse_line(li: str, accurate_steps: bool = True) -> list[list[int]]:
             inst.append(0)
         assert len(inst) == scratch  # this should always succeed
     return F
+
+
+def parse_line_opt(li: str) -> list[list[int]]:
+    """
+    :param li: An RM in the typical format.
+    :return: An FM in vector representation. All vectors have the same length.
+
+    In this function, the input RM and output FM are both halting or both non-halting.
+    The output FM is optimized.
+
+    Warning: If the RM has an infinite increment loop, this function will throw.
+    Warning: The RM must have <=26 instructions and <=10 registers.
+    """
+    # extract RM
+    tokens = [t for t in li.split() if '_' in t]
+    assert len(tokens) == 1, "can't find rm"
+    li = tokens[0]
+    insts = li.split('_')
+    n = len(insts)
+
+    assert False, 'tell the author to finish coding this'
 
 
 def parse_file(file: str) -> list[list[list[int]]]:

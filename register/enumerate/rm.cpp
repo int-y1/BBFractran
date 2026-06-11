@@ -4,7 +4,8 @@
 using namespace std;
 
 const int LIM=8; // max sz to enumerate
-const bool USE_RESULTS=1; // use the fact that MBB(7) = 231 (TODO: improve the deciders so that this isn't needed)
+const bool USE_RESULTS=1; // use the fact that MBB(7) = 231 (TODO: improve the deciders so that MBB(7) has no holdouts)
+const bool EXPAND_HOLDOUT=0; // expand holdouts? (use 1 for completeness. use 0 if you're ok with halters making the holdouts list inaccurate)
 
 // instructions are numbered 1 (A), 2 (B), 3 (C), ...
 // instruction 0 represents undefined
@@ -207,7 +208,6 @@ vector<program> solve(int sz_max,const program& prog) {
     vector<fullstate> history;
     pair<int,int> last_transition;
     for (ll steps=0; steps<10000;) {
-        if (USE_RESULTS && steps==231+2 && prog.size()<=7) return {}; // nonhalt
         history.push_back(s);
         if (steps>=3) {
             if (translated_cycle(prog,history[steps-steps/3-steps/3],history[steps-steps/3],s)) {
@@ -235,6 +235,7 @@ vector<program> solve(int sz_max,const program& prog) {
             }
         },prog.at(s.first-1));
         steps++;
+        if (USE_RESULTS && steps==231+1 && prog.size()<=7) return {}; // nonhalt
         if (s.first==0) { // halted
             if (busy1<steps) {
                 fprintf(stderr,"  NEW CHAMPION STEPS=%lld %s\n",steps,program_str(prog).c_str());
@@ -268,25 +269,27 @@ vector<program> solve(int sz_max,const program& prog) {
     cnt[cntstep++]++;
     vector<program> out;
     printf("  HOLDOUT %s\n",program_str(prog).c_str());
-    fflush(stdout);
-    for (int i=1; i<=prog.size(); i++) {
-        visit(overloaded{
-            [&out,&prog,&i,&maxreg](instruction_inc inst) {
-                auto [c,n]=inst;
-                if (n==0) {
-                    for (auto& prog2:expand_tnf(prog,{i,0},maxreg)) out.push_back(prog2);
+    //fflush(stdout);
+    if (EXPAND_HOLDOUT) {
+        for (int i=1; i<=prog.size(); i++) {
+            visit(overloaded{
+                [&out,&prog,&i,&maxreg](instruction_inc inst) {
+                    auto [c,n]=inst;
+                    if (n==0) {
+                        for (auto& prog2:expand_tnf(prog,{i,0},maxreg)) out.push_back(prog2);
+                    }
+                },
+                [&out,&prog,&i,&maxreg](instruction_dec inst) {
+                    auto [c,n,m]=inst;
+                    if (n==0) {
+                        for (auto& prog2:expand_tnf(prog,{i,1},maxreg)) out.push_back(prog2);
+                    }
+                    if (m==0) {
+                        for (auto& prog2:expand_tnf(prog,{i,2},maxreg)) out.push_back(prog2);
+                    }
                 }
-            },
-            [&out,&prog,&i,&maxreg](instruction_dec inst) {
-                auto [c,n,m]=inst;
-                if (n==0) {
-                    for (auto& prog2:expand_tnf(prog,{i,1},maxreg)) out.push_back(prog2);
-                }
-                if (m==0) {
-                    for (auto& prog2:expand_tnf(prog,{i,2},maxreg)) out.push_back(prog2);
-                }
-            }
-        },prog.at(i-1));
+            },prog.at(i-1));
+        }
     }
     return out;
 }
