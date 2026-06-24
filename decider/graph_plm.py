@@ -1,4 +1,4 @@
-# python -m decider.graph_search2
+# python -m decider.graph_plm
 import sys
 from itertools import product
 from decider.utils import parse_file, unparse_line
@@ -83,7 +83,7 @@ Note: For n >= -min(F), the 3rd choice from Note PLM.5b becomes impossible.
 '''
 
 
-def graph_search2(F: list[list[int]], EXP_LIM: int) -> str | None:
+def graph_plm(F: list[list[int]], EXP_LIM: int) -> str | None:
     I = len(F[0])
 
     # Lemma PLM.8: guarantee that the same inst is always used
@@ -123,19 +123,19 @@ def graph_search2(F: list[list[int]], EXP_LIM: int) -> str | None:
             return None  # found a path from compress_n(u_0) to halt
 
     # Theorem PLM.7 is applicable
-    return f'GRAPH_SEARCH2({EXP_LIM})'
+    return f'GRAPH_PLM({EXP_LIM})'
 
 
 if __name__ == '__main__':
     holdouts = parse_file('holdout/sz19_231.txt')
     # sys.stdout = open('decider/tmp.txt', 'w')
-    print(f'running graph_search2 on {len(holdouts)} holdouts')
+    print(f'running graph_plm on {len(holdouts)} holdouts')
     print()
 
     holdouts2: list[list[list[int]]] = []
     for F in holdouts:
         for EXP_LIM in range(1, 13):
-            result = graph_search2(F, EXP_LIM)
+            result = graph_plm(F, EXP_LIM)
             if result is not None:
                 print(f'{unparse_line(F)}, NON-HALT: {result}')
                 break

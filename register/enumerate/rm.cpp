@@ -108,7 +108,7 @@ bool translated_cycle(const program& prog,fullstate s0,fullstate s1,fullstate s2
 
 /*
 1 = cannot halt. 0 = unsure.
-idea of graph_search2 (similar to fractran's "power limit mod")
+idea of graph_plm (similar to fractran's "power limit mod")
 
 * LIM is the register limit
 * do a graph search, but limit the registers to 2*LIM different groups
@@ -118,7 +118,7 @@ idea of graph_search2 (similar to fractran's "power limit mod")
 * if halting never occurs, the program runs forever
 
 */
-bool graph_search2(const program& prog,int maxreg,int lim) {
+bool graph_plm(const program& prog,int maxreg,int lim) {
     vector<fullstate> q;
     set<fullstate> vis;
     {
@@ -260,10 +260,10 @@ vector<program> solve(int sz_max,const program& prog) {
             return expand_tnf(prog,last_transition,maxreg);
         }
     }
-    // decider: graph_search2
+    // decider: graph_plm
     cnt[cntstep++]++;
     for (int lim=5; lim<=8; lim++) {
-        if (graph_search2(prog,maxreg,lim)) return {}; // nonhalt
+        if (graph_plm(prog,maxreg,lim)) return {}; // nonhalt
     }
     // hard program
     cnt[cntstep++]++;

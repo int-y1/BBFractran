@@ -1,7 +1,7 @@
 # python -m register.decider.simple
 import sys
-from decider.graph_search2 import graph_search2 as plm
-from decider.graph_search3 import graph_search3 as pdlm
+from decider.graph_plm import graph_plm
+from decider.graph_pdlm import graph_pdlm
 # from decider.isv import isv  # TODO: is ISV useless for RMs?
 from register.decider.utils import parse_file
 
@@ -13,9 +13,9 @@ A script that runs all RM holdouts on a Fractran decider.
 def run_decider(F: list[list[int]]) -> str | None:
     result = None
     for EXP_LIM in range(1, 13):
-        result = plm(F, EXP_LIM) if result is None else result
+        result = graph_plm(F, EXP_LIM) if result is None else result
     for EXP_LIM in range(1, 13):
-        result = pdlm(F, EXP_LIM) if result is None else result
+        result = graph_pdlm(F, EXP_LIM) if result is None else result
     return result
 
 

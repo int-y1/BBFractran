@@ -9,7 +9,7 @@ the main idea.
 
 ---
 
-In graph_search2.py, read the following: Basic definitions.
+In graph_plm.py, read the following: Basic definitions.
 
 For info on the Z3 API, read:
 https://microsoft.github.io/z3guide/programming/Z3%20Python%20-%20Readonly/Introduction

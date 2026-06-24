@@ -1,18 +1,18 @@
-# python -m decider.graph_search3
+# python -m decider.graph_pdlm
 import sys
 from itertools import product
 from decider.utils import parse_file, unparse_line
 
 '''
-This is an implementation of Power Difference Limit Mod. The main idea is similar to
-graph_search2.py, and the main difference is the definition of compress_n.
+This is an implementation of Power Difference Limit Mod. The main idea is similar to graph_plm.py,
+and the main difference is the definition of compress_n.
 
 Note: This decider only generates a certificate for n > |max(F)| + |min(F)|. This keeps the decider
 simple.
 
 ---
 
-In graph_search2.py, read the following:
+In graph_plm.py, read the following:
 Basic definitions, Definition PLM.1, Definition PLM.2, Lemma PLM.3.
 
 ---
@@ -59,7 +59,7 @@ be more stable and easier to work with.
 '''
 
 
-def graph_search3(F: list[list[int]], EXP_LIM: int) -> str | None:
+def graph_pdlm(F: list[list[int]], EXP_LIM: int) -> str | None:
     I = len(F[0])
 
     # Lemma PDLM.5: guarantee that the same inst is always used
@@ -119,19 +119,19 @@ def graph_search3(F: list[list[int]], EXP_LIM: int) -> str | None:
                 return None  # found a path from compress_n(u_0) to halt
 
     # Theorem PDLM.4 is applicable
-    return f'GRAPH_SEARCH3({EXP_LIM})'
+    return f'GRAPH_PDLM({EXP_LIM})'
 
 
 if __name__ == '__main__':
     holdouts = parse_file('holdout/sz20_279.txt')
     # sys.stdout = open('decider/tmp.txt', 'w')
-    print(f'running graph_search3 on {len(holdouts)} holdouts')
+    print(f'running graph_pdlm on {len(holdouts)} holdouts')
     print()
 
     holdouts2: list[list[list[int]]] = []
     for F in holdouts:
         for EXP_LIM in range(1, 13):
-            result = graph_search3(F, EXP_LIM)
+            result = graph_pdlm(F, EXP_LIM)
             if result is not None:
                 print(f'{unparse_line(F)}, NON-HALT: {result}')
                 break

@@ -9,7 +9,7 @@ This is an implementation of Beeping Permutation using Z3. BP is an extended ver
 
 ---
 
-In graph_search2.py, read the following: Basic definitions.
+In graph_plm.py, read the following: Basic definitions.
 
 You may find isv.py and bisv.py helpful to read, since ISV and BISV are simpler and weaker versions.
 

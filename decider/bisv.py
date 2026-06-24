@@ -9,7 +9,7 @@ of ISV. See Theorem BISV.3 for the main idea.
 
 ---
 
-In graph_search2.py, read the following: Basic definitions.
+In graph_plm.py, read the following: Basic definitions.
 
 You may find isv.py helpful to read, since ISV is a simpler and weaker version of BISV.
 

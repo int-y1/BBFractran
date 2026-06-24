@@ -6,10 +6,10 @@ Some deciders use [Z3](https://github.com/Z3Prover/z3). You may need to `pip ins
 
 List of deciders:
 
-* Power Limit Mod (`graph_search2.py`).
-  * The certificate `GRAPH_SEARCH2(x)` represents a cap of `x` and a mod value of `x`.
-* Power Difference Limit Mod (`graph_search3.py`).
-  * The certificate `GRAPH_SEARCH3(x)` represents a cap of `x` and a mod value of `x`.
+* Power Limit Mod (`graph_plm.py`).
+  * The certificate `GRAPH_PLM(x)` represents a cap of `x` and a mod value of `x`.
+* Power Difference Limit Mod (`graph_pdlm.py`).
+  * The certificate `GRAPH_PDLM(x)` represents a cap of `x` and a mod value of `x`.
 * Linear Combination (`lin_comb.py` and `lin_comb2.py`).
   * The certificate `LIN_COMB(c_2, c_3, c_5, c_7, ...)` represents coefficients to use on each prime.
   * `lin_comb.py` is deprecated.
@@ -23,4 +23,4 @@ List of deciders:
 * Beeping Permutation (`bp.py`).
   * Warning: this decider hasn't been reviewed / reproduced by the bbchallenge community. Please open an issue if you find a bug.
 
-Historical note: `graph_search.py` implements the Power Limit decider, but this decider is very weak and not worth preserving.
+Historical note: `graph_search.py` implements the Power Limit decider, but this decider is very weak and not worth preserving. `graph_search2.py` is the old name of `graph_plm.py`. `graph_search3.py` is the old name of `graph_pdlm.py`.
