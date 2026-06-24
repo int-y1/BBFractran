@@ -106,20 +106,18 @@ def parse_line_opt(li: str) -> list[list[int]]:
     return F
 
 
-def parse_file(file: str, opt: bool = False) -> list[list[list[int]]]:
+def parse_file(file: str, opt: bool = False) -> list[tuple[str, list[list[int]]]]:
     """
     :param file: A path to a file. The file should contain RMs parseable by `parse_line`.
-    :return: A list of FMs in vector representation.
-
-    TODO: loses information about the RM string
+    :return: A list. Each list element is the RM and its Fractran vector representation.
     """
-    Fs = []
+    Fs: list[tuple[str, list[list[int]]]] = []
     with open(file) as f:
         for li in f.read().split('\n'):
             if '_' not in li:
                 continue
             if opt:
-                Fs.append(parse_line_opt(li))
+                Fs.append((li, parse_line_opt(li)))
             else:
-                Fs.append(parse_line(li))
+                Fs.append((li, parse_line(li)))
     return Fs
