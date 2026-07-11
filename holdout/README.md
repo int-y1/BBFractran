@@ -93,7 +93,9 @@ TODO: Create `sz21_halted_23.txt`.
   * See `sz23_halted_6780.txt` for a list of machines that halted.
 * `sz23_21295.txt` (Jun 2, 2026): After simulating machines until halt. ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1511579969825013811)) (Thanks @Shawn Ligocki for simulating the machines)
   * See `sz23_halted_6805.txt` for a list of machines that halted.
+* `sz23_21233.txt` (Jul 10, 2026): After simulating machines until halt. ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1525198083363967136)) (First found by Opus 4.8. Thanks @Shawn Ligocki for strengthening the simulator and verifying the results.)
+  * See `sz23_halted_6867.txt` for a list of machines that halted.
 
-I might consider deleting `sz23_21320.txt` and `sz23_halted_6780.txt`. These 2 files are less important because the simulator's parameters were small.
+I might consider deleting `sz23_21320.txt`, `sz23_halted_6780.txt`, `sz23_21295.txt`, and `sz23_halted_6805.txt`. These 4 files are less important because the simulator was weak.
 
 TODO: Find a machine in `sz23_790335.txt`, not in `sz23_28100.txt`, and halts. (If this machine exists, that means there is a bug in my pipeline.) (Update: such a machine might be hard to find? Try simulating each machine to 10^9 steps.)
