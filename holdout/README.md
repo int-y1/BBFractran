@@ -9,12 +9,14 @@ TODO:
 * A new decider "Beeping Integer Spanning Vectors" (BISV) made progress on size 20 and above. In particular, it might solve 6/6 of sz20 (no Lean proofs needed), 142/345 of sz21, and 2321/5682 of sz22. However, as of Jan 23, 2026, this decider hasn't been reviewed / reproduced by the bbchallenge community. Please open an issue if you find a bug.
 * A new decider "Beeping Permutation" (BP) is a stronger version of BISV. In particular, it might solve 6/6 of sz20 (no Lean proofs needed), 205/345 of sz21, and 3679/5682 of sz22. However, as of Jan 23, 2026, this decider hasn't been reviewed / reproduced by the bbchallenge community. Please open an issue if you find a bug.
 
-## Errata
+## Errata / File changes
 
 * Dec 11, 2025: `sz21_783.txt` is incorrect. See `sz21_798.txt` for the correct version.
 * Dec 11, 2025: `sz21_760.txt` is incorrect. See `sz21_775.txt` for the correct version.
 * Dec 11, 2025: `sz21_587.txt` is incorrect. See `sz21_602.txt` for the correct version.
 * Dec 27, 2025: Removed vector representation from `sz20_1827.txt` and `sz20_902.txt`.
+* Jul 23, 2026: `sz21_140_unofficial.txt` was renamed to `sz21_140.txt`.
+* Jul 23, 2026: `sz22_2003_unofficial.txt` was renamed to `sz22_2003.txt`.
 
 ## Size 17
 
@@ -60,7 +62,7 @@ The 6 holdouts were proved non-halting with a formal Lean proof. [link](https://
 * `sz21_597.txt` (Dec 22, 2025): After applying the "Power Difference Limit Mod" decider with higher parameters. (The strategy is the same as `sz22_9829.txt`.)
 * `sz21_553.txt` (Dec 31, 2025): After applying the "Integer Spanning Vectors" decider.
 * `sz21_345.txt` (Jan 1, 2026): After applying the "Masked Linear Invariant" decider.
-* `sz21_140_unofficial.txt` (Jan 24, 2026): After applying the "Beeping Permutation" decider. (See warning above about BP.)
+* `sz21_140.txt` (Jan 24, 2026): After applying the "Beeping Permutation" decider. (See warning above about BP.)
 
 On Mar 25, 2026, the 140 holdouts were proved non-halting by prompting Claude Opus 4.6 for Lean proofs. See <https://github.com/int-y1/proofs/blob/master/BBfLean/Size21Summary.lean>.
 
@@ -76,7 +78,7 @@ TODO: Create `sz21_halted_23.txt`.
 * `sz22_9829.txt` (Dec 21, 2025): After applying the "Power Difference Limit Mod" decider with higher parameters. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1452353731449327820)
 * `sz22_8352.txt` (Dec 31, 2025): After applying the "Integer Spanning Vectors" decider.
 * `sz22_5682.txt` (Jan 1, 2026): After applying the "Masked Linear Invariant" decider.
-* `sz22_2003_unofficial.txt` (Jan 24, 2026): After applying the "Beeping Permutation" decider. (See warning above about BP.)
+* `sz22_2003.txt` (Jan 24, 2026): After applying the "Beeping Permutation" decider. (See warning above about BP.)
 * `sz22_3.txt` (Apr 3, 2026): After prompting Claude Opus 4.6 for Lean proofs. See <https://github.com/int-y1/proofs/blob/master/BBfLean/Size22Summary.lean>.
   * See `sz22_halted_692.txt` (Apr 5, 2026) for a list of machines that took more than 10000 steps to halt (689 machines from `sz22_halted_689.txt`, 3 new machines found by Claude Opus 4.6). The format of each line is `<machine> <steps to halt>`.
 
@@ -95,7 +97,5 @@ TODO: Create `sz21_halted_23.txt`.
   * See `sz23_halted_6805.txt` for a list of machines that halted.
 * `sz23_21233.txt` (Jul 10, 2026): After simulating machines until halt. ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1525198083363967136)) (First found by Opus 4.8. Thanks @Shawn Ligocki for strengthening the simulator and verifying the results.)
   * See `sz23_halted_6867.txt` for a list of machines that halted.
-
-I might consider deleting `sz23_21320.txt`, `sz23_halted_6780.txt`, `sz23_21295.txt`, and `sz23_halted_6805.txt`. These 4 files are less important because the simulator was weak.
 
 TODO: Find a machine in `sz23_790335.txt`, not in `sz23_28100.txt`, and halts. (If this machine exists, that means there is a bug in my pipeline.) (Update: such a machine might be hard to find? Try simulating each machine to 10^9 steps.)
