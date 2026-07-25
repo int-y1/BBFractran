@@ -24,5 +24,7 @@ List of deciders:
   * Warning: this decider hasn't been reviewed / reproduced by the bbchallenge community. Please open an issue if you find a bug.
 * 1D Progress Certificates (`oned_progress.py`).
   * Warning: this decider was entirely written by AI (Opus 4.8). Until a human reproduces the decider, I will label all results as `unofficial`.
+* 2D Progress Certificates (`twod_progress.py`).
+  * Warning: this decider was entirely written by AI (Opus 4.8). Until a human reproduces the decider, I will label all results as `unofficial`.
 
 Historical note: `graph_search.py` implements the Power Limit decider, but this decider is very weak and not worth preserving. `graph_search2.py` is the old name of `graph_plm.py`. `graph_search3.py` is the old name of `graph_pdlm.py`.
