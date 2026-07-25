@@ -99,5 +99,6 @@ TODO: Create `sz21_halted_23.txt`.
   * See `sz23_halted_6867.txt` for a list of machines that halted.
 * `sz23_8021_unofficial.txt` (Jul 23, 2026): After applying the "1D Progress Certificates" decider. This holdouts list is unofficial because the decider was entirely written by Opus 4.8, and no one has reimplemented the decider yet.
 * `sz23_703_unofficial.txt` (Jul 25, 2026): After applying the "2D Progress Certificates" decider. This holdouts list is unofficial because the decider was entirely written by Opus 4.8, and no one has reimplemented the decider yet. I used a time budget of 300s.
+* `sz23_694_unofficial.txt` (Jul 25, 2026): After applying the "2D Progress Certificates" decider with a time budget of 3600s.
 
 TODO: Find a machine in `sz23_790335.txt`, not in `sz23_28100.txt`, and halts. (If this machine exists, that means there is a bug in my pipeline.) (Update: such a machine might be hard to find? Try simulating each machine to 10^9 steps.)
