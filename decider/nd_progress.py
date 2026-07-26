@@ -1,4 +1,4 @@
-# python -m decider.twod_progress
+# python -m decider.nd_progress
 import itertools
 from collections import defaultdict
 from fractions import Fraction
@@ -13,13 +13,10 @@ decider is unsound or contains sketchy code.
 
 ---
 
-twod_progress.py — N-D Progress Certificate decider for FRACTRAN non-halting (N in {2,3}).
+nd_progress.py — N-D Progress Certificate decider for FRACTRAN non-halting (N in {2,3}).
 
-Pure Python — no sympy, no z3;
-runs on Python 3.9 and 3.12; the entry point is a module-level function, so it works
-under multiprocessing.  This is a self-contained assembly of the research modules
-(research_2dpc/{lin,twod_engine,twod_decider}.py) produced by build_shipped.py —
-edit those and regenerate rather than hand-editing this file.
+Pure Python — no sympy, no z3; runs on Python 3.9 and 3.12;
+the entry point is a module-level function, so it works under multiprocessing.
 
 --------------------------------------------------------------------------------
 WHAT IT PROVES.  Non-halting via a parameterized INVARIANT REGION — the automated
@@ -63,16 +60,16 @@ SOUNDNESS DISCIPLINE (the soundness-critical engine, `verify_region` / `verify_c
     case analysis exhaustive over the actual integer parameters.
 
 --------------------------------------------------------------------------------
-RESULTS (decided / total; combined 1DPC ∪ 2DPC, where 1DPC is the sibling 1-D decider):
+RESULTS (decided / total; combined 1DPC ∪ NDPC, where 1DPC is the sibling 1-D decider):
 
-    set                     1DPC (1-D)        1DPC ∪ 2DPC        2DPC adds
+    set                     1DPC (1-D)        1DPC ∪ NDPC        NDPC adds
     sz21_140                 95 (67.9%)       140  (100.0%)        +45
     sz22_2003              1325 (66.2%)      1979  ( 98.8%)       +654
     sz23_21233 (open)     13212 (62.2%)     20441  ( 96.3%)      +7229
 
   sz21 and sz22 are Lean-proven non-halting, so those are COMPLETENESS rates (each
   decision is cross-checked against a formal proof).  sz23_21233 is the open size-23
-  residual; there 2DPC alone decides 7229 / 8021 = 90.1% of the 1DPC residual.
+  residual; there NDPC alone decides 7229 / 8021 = 90.1% of the 1DPC residual.
   Within sz22, recall on the `progress_nonhalt` (2-variable invariant-set) class the
   method targets is 97%.
 
@@ -94,7 +91,7 @@ STRUCTURE (this file, in three sections):
                        human-readable certificate renderer (`render_cert`).
 
 USAGE.
-    twod_progress(F) -> "TWOD_PROGRESS(nvars,regs,mod,boot_t)" | None
+    nd_progress(F) -> "ND_PROGRESS(cert)" | None
         F is a list of int DELTA vectors: state 2^a0*3^a1*5^a2... is [a0,a1,...] and a
         rule a/b is (exponents of a) - (exponents of b); rule j fires at state u iff
         u[i]+F[j][i] >= 0 for all i; the first applicable rule fires; start state = 2.
@@ -1086,17 +1083,9 @@ def _decide_2d(F, width, step_cap=40000, min_occ=6, max_shapes=4,
     return None
 
 
-def cert_str(cert):
-    if cert is None:
-        return None
-    return (f"2DPC(nvars={cert['nvars']},regs={cert['param_regs']},"
-            f"mod={cert['moduli']},boot_t={cert['boot_t']})")
-
-
 # ---------------------------------------------------------------------------
-# human-readable certificate rendering (shows the 2-D region as inequalities)
+# human-readable certificate rendering (shows the N-D region as inequalities)
 # ---------------------------------------------------------------------------
-
 _LETTERS = 'abcdefghijklmnop'
 
 
@@ -1141,7 +1130,7 @@ def _fmt_ineq(coeffs, names):
 
 
 def render_cert(cert, prog=None):
-    """A human-readable rendering of a 2DPC certificate, showing the invariant
+    """A human-readable rendering of an NDPC certificate, showing the invariant
     2-D (or 3-D) region as linear inequalities over named registers."""
     if cert is None:
         return 'UNDECIDED'
@@ -1161,7 +1150,7 @@ def render_cert(cert, prog=None):
 
     lines = []
     if prog:
-        lines.append(f'2-D Progress Certificate for {prog}')
+        lines.append(f'N-D Progress Certificate for {prog}')
     lines.append(f'  registers: ' +
                  ', '.join(f'{reg_name[i]}=reg{i}' for i in range(width)) +
                  f'   (state = {prime_pow})')
@@ -1190,26 +1179,25 @@ def render_cert(cert, prog=None):
 # ===========================================================================
 
 
-def twod_progress(F, step_cap=40000, time_budget=300.0):
+def nd_progress(F, step_cap=40000, time_budget=300.0):
     """Prove F (started from 2) is non-halting via an N-D progress certificate.
-    Returns a certificate string "TWOD_PROGRESS(...)" or None (undecided)."""
+    Returns a certificate string "ND_PROGRESS(...)" or None (undecided)."""
     width = len(F[0])
     cert = _decide_2d(F, width, step_cap=step_cap, time_budget=time_budget)
     if cert is None:
         return None
-    return ("TWOD_PROGRESS(nvars=%d,regs=%s,mod=%s,boot_t=%d)"
-            % (cert['nvars'], cert['param_regs'], cert['moduli'], cert['boot_t']))
+    return f"ND_PROGRESS({cert!r})"
 
 
 if __name__ == '__main__':
     holdouts = parse_file('holdout/sz21_140.txt')
     # sys.stdout = open('decider/tmp.txt', 'w')
-    print(f'running twod_progress on {len(holdouts)} holdouts')
+    print(f'running nd_progress on {len(holdouts)} holdouts')
     print()
 
     holdouts2: list[list[list[int]]] = []
     for F in holdouts:
-        result = twod_progress(F)
+        result = nd_progress(F)
         if result is not None:
             print(f'{unparse_line(F)}, NON-HALT: {result}')
         else:
