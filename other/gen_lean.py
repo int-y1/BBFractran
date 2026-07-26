@@ -30,8 +30,10 @@ Vector representation:
 TODO: After the proof compiles without any errors, replace this paragraph with one of:
 * This Fractran program doesn't halt.
 * This Fractran program halts.
+* This Fractran program may be a Cryptid. (If possible, add an explanation of whether the program is more likely to halt or not halt. Your explanation should be 2 to 5 sentences.)
 
 Author: (replace this with the author of the proof)
+Tokens used: (replace this with the number of tokens you used)
 -/
 
 namespace {holdout_file.capitalize()}_{holdout_number}
@@ -42,7 +44,11 @@ def fm : Q → Option Q := fun q ↦ match q with
   | {(chr(10)+'  | ').join(fm_match)}
   | _ => none
 
+-- TODO: Prove 1 of these theorems. If the program is a Cryptid, you should instead prove as many rules as possible, and explain whether the program is more likely to halt or not halt.
 theorem nonhalt : ¬halts fm c₀ := by
+  sorry
+
+theorem halts_thm : halts fm c₀ := by
   sorry
 '''
     return filename, proof_template
