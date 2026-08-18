@@ -1,22 +1,12 @@
 /*
-fractran enumeration for BBf(23)
-might take 9-12 days on 15 threads
-might create a 50-70MB file fractran.txt containing 800000-1000000 holdouts
+fractran enumeration for BBf(24)
+might take ~70 days on 15 threads
+might create files that sum to 350-450MB and contain 6000000-7000000 holdouts
 
-WARNING: enumeration might be suboptimal if you have >300 threads
+WARNING: enumeration might be suboptimal if "THREADS * arg2 > 1000"
 
-benchmarks (using 15 threads)
-size    holdouts    time (ms)    size of fractran.txt    worst work unit
-18      0           141804       3054747 bytes           119265 (3288 ms)
-19      48          732846       3762294 bytes           129508 (18796 ms)
-20      902         4519764      4228581 bytes           136495 (121724 ms)
-
-benchmarks (using 88 threads)
-size    holdouts    time (ms)    size of fractran.txt    worst work unit
-20      902         198352       3993985 bytes           136495 (34768 ms)
-21      9427        1189435      4606643 bytes           137797 (234563 ms)
-22      91123       7427824      9136307 bytes           137804 (1611359 ms)
-23      790335      47689945     48756883 bytes          137804 (11284905 ms)
+benchmarks (not yet)
+args    holdouts    time (ms)    size of fractran.txt    worst work unit
 
 */
 
@@ -26,7 +16,6 @@ typedef long long ll;
 typedef vector<int> fraction;
 typedef vector<fraction> program;
 
-const int SIZE=23; // sz to enumerate
 const vector<int> PRIMES{2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97}; // copied from https://oeis.org/A000040
 
 // convert prog to a list of fractions. hopefully it doesn't overflow ll.
@@ -483,11 +472,27 @@ void enumerate2(int sz_max,int sz,program& prog,int newcol,int countdown) {
     }
 }
 
-int main() {
-    freopen("fractran.txt","w",stdout);
+int main(int argc,char* argv[]) {
+    // get params
+    int SIZE=(argc>1?stoi(argv[1]):0);
+    int arg1=(argc>2?stoi(argv[2]):0);
+    int arg2=(argc>3?stoi(argv[3]):0);
+    if (!(argc==4 && 1<=SIZE && SIZE<=24 && arg2>0 && 1<=arg1 && arg1<=arg2)) {
+        printf("invoke this program as: <name> <SIZE> <arg1> <arg2>\n");
+        printf("Enumeration of BBf(SIZE) is split into arg2 equal-sized pieces, and arg1 specifies the piece to run.\n");
+        return 1;
+    }
+    string filename="fractran";
+    filename+=to_string(SIZE);
+    filename+="_";
+    filename+=to_string(arg1);
+    filename+="_";
+    filename+=to_string(arg2);
+    filename+=".txt";
+    freopen(filename.c_str(),"w",stdout);
     // spawn max threads minus 1
     int THREADS=std::thread::hardware_concurrency();
-    if (THREADS>1) THREADS--;
+    if (THREADS>1) THREADS=THREADS*9/10;
     assert(THREADS>0); // wontfix
     for (int sz=SIZE; sz<=SIZE; sz++) { // enumerate 1 size to keep it simple
         fprintf(stderr,"sz %d\n",sz);
@@ -496,8 +501,20 @@ int main() {
         final_wr=workresult();
         program v{{0}};
         ll t0=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-        enumerate2(sz,1,v,0,11);
+        enumerate2(sz,1,v,0,12);
         ll t1=std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        printf("sz=%d THREADS=%d work_units=%d (time=%lld ms)\n",sz,THREADS,work.size(),t1-t0);
+        fflush(stdout);
+        // do part of the work, use arg1 arg2
+        {
+            vector<tuple<int,int,program,int,int>> work2;
+            uniform_int_distribution<int> uid(1,arg2);
+            mt19937 rng(123);
+            for (auto& w:work) {
+                if (uid(rng)==arg1) work2.push_back(w);
+            }
+            work=work2;
+        }
         printf("sz=%d THREADS=%d work_units=%d (time=%lld ms)\n",sz,THREADS,work.size(),t1-t0);
         fflush(stdout);
         vector<thread> tt;

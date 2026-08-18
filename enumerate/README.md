@@ -18,6 +18,20 @@ The program will write to 2 locations:
 * stderr will show information to help with debugging the enumerator.
 * The file `fractran.txt` contains the output of the enumeration. This file is intended to be studied further or shared.
 
+---
+
+These commands will build and run the August 2026 program:
+
+```
+./ac fractran20260818
+./a 24 1 10
+./a 24 2 10
+...
+./a 24 10 10
+```
+
+The output is written to the files `fractran24_1_10.txt` to `fractran24_10_10.txt`.
+
 ## Explanation of `fractran20251113`
 
 To enumerate all fractran programs of size `sz`, make sure to reset `busy` (final step count) and `champions` (list of champion machines), then call `enumerate(sz,1,v)`.
@@ -71,3 +85,12 @@ It's like `fractran20251116` with improved support for work units:
 The enumeration speed is about the same as `fractran20251116`.
 
 TODO: Allow the user to specify a range of work units to run. (I'll wait until this feature is needed.)
+
+## Explanation of `fractran20260818`
+
+It's like `fractran20260416` that allows you to run a part of the enumeration:
+
+* Use 90% of threads.
+* Command requires you to specify SIZE, arg1, arg2. Enumeration is split into arg2 equal-sized pieces, and arg1 specifies the piece to run.
+
+The enumeration speed is about the same as `fractran20251116`.
