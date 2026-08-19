@@ -41,7 +41,7 @@
 *.dwo
 
 # custom
-enumerate/fractran.txt
+enumerate/fractran*.txt
 **/__pycache__
 decider/tmp.txt
 other/lean/*.lean
