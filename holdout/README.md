@@ -102,4 +102,8 @@ TODO: Create `sz21_halted_23.txt`.
 * `sz23_694_unofficial.txt` (Jul 25, 2026): After applying the "N-Dimensional Progress Certificates" decider with a time budget of 3600s.
 * `sz23_13_unofficial.txt` (Aug 4, 2026): After prompting Claude Opus 4.8 / 5 for Lean proofs of `sz23_694_unofficial.txt`. See <https://github.com/int-y1/proofs/blob/master/BBfLean/Size23Summary.lean>. If all 13 holdouts are proved non-halting, BBf(23) would be (unofficially) solved.
 
-TODO: Find a machine in `sz23_790335.txt`, not in `sz23_28100.txt`, and halts. (If this machine exists, that means there is a bug in my pipeline.) (Update: such a machine might be hard to find? Try simulating each machine to 10^9 steps.)
+TODO: Find a machine in `sz23_790335.txt`, not in `sz23_halted_6867.txt`, and halts. I don't expect this to be possible. If this machine exists, this is either a breakthrough or a bug in my pipeline. (TODO: Try simulating each machine to 10^9 steps.)
+
+## Size 24
+
+* `sz24_6733785.zip` (Aug 30, 2026): Direct output from `fractran20260818` (~7790 core-hours). Uncompressed size is 253507201 bytes. For reference, `fractran20260818` produced `sz23_790335.txt` in ~1170 core-hours.
