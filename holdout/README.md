@@ -90,7 +90,7 @@ TODO: Create `sz21_halted_23.txt`.
 * `sz23_94367.txt` (May 31, 2026): After applying the "Integer Spanning Vectors" decider up to `ISV(1000)`, and the "Power Difference Limit Mod" decider up to `GRAPH_PDLM(12)`.
 * `sz23_29250.txt` (May 31, 2026): After applying the "Beeping Permutation" decider up to k = 1000. (See warning above about BP.)
 * `sz23_29188.txt` (Jun 1, 2026): After applying the "Power Difference Limit Mod" decider up to `GRAPH_PDLM(24)`. (There were 6 machines decided by `GRAPH_PDLM(24)`.)
-* `sz23_28100.txt` (Jun 1, 2026): After applying an improved version of "Beeping Permutation". (See warning above about BP.)
+* `sz23_28100.txt` (Jun 1, 2026): After applying `bp_prefix`, an improved version of "Beeping Permutation". (See warning above about BP.)
 * `sz23_21320.txt` (Jun 1, 2026): After simulating machines until halt. ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1510804448090521650)) (Thanks @Shawn Ligocki for simulating the machines)
   * See `sz23_halted_6780.txt` for a list of machines that halted.
 * `sz23_21295.txt` (Jun 2, 2026): After simulating machines until halt. ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1511579969825013811)) (Thanks @Shawn Ligocki for simulating the machines)
@@ -107,3 +107,4 @@ TODO: Find a machine in `sz23_790335.txt`, not in `sz23_halted_6867.txt`, and ha
 ## Size 24
 
 * `sz24_6733785.zip` (Aug 30, 2026): Direct output from `fractran20260818` (~7790 core-hours). Uncompressed size is 253507201 bytes. For reference, `fractran20260818` produced `sz23_790335.txt` in ~1170 core-hours.
+* `sz24_945600.zip` (Sep 4, 2026): After applying the "Integer Spanning Vectors" decider up to `ISV(1000)`, and the "Power Difference Limit Mod" decider up to `GRAPH_PDLM(12)`.
