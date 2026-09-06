@@ -109,3 +109,5 @@ TODO: Find a machine in `sz23_790335.txt`, not in `sz23_halted_6867.txt`, and ha
 * `sz24_6733785.zip` (Aug 30, 2026): Direct output from `fractran20260818` (~7790 core-hours). Uncompressed size is 253507201 bytes. For reference, `fractran20260818` produced `sz23_790335.txt` in ~1170 core-hours.
 * `sz24_945600.zip` (Sep 4, 2026): After applying the "Integer Spanning Vectors" decider up to `ISV(1000)`, and the "Power Difference Limit Mod" decider up to `GRAPH_PDLM(12)`.
 * `sz24_298146.txt` (Sep 6, 2026): After applying `bp_prefix`, an improved version of "Beeping Permutation". (See warning above about BP.)
+* `sz24_231444.txt` (Sep 6, 2026): After applying @Shawn Ligocki's simulator `shift-sim-all` with 100000 steps. 66689 halted and 13 were infinite.
+  * See `sz24_halted_66689.txt` for a list of machines that halted.
