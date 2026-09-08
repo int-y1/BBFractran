@@ -47,3 +47,5 @@ decider/tmp.txt
 other/lean/*.lean
 other/lean/*/*.lean
 **/tmp*
+holdout/sz24_6733785.txt
+holdout/sz24_945600.txt

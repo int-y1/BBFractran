@@ -3,6 +3,8 @@ import queue
 from decider.bp import bp_prefix
 from decider.graph_pdlm import graph_pdlm
 from decider.isv import isv
+from decider.nd_progress import nd_progress
+from decider.oned_progress import oned_progress
 from decider.utils import parse_file, unparse_line
 from multiprocessing import Manager, Process
 from os import cpu_count
@@ -20,6 +22,8 @@ def run_decider(F: list[list[int]]) -> str | None:
     for EXP_LIM in range(1, 13):
         result = graph_pdlm(F, EXP_LIM) if result is None else result
     result = bp_prefix(F) if result is None else result
+    #result = oned_progress(F) if result is None else result
+    #result = nd_progress(F,40000,300) if result is None else result
     return result
 
 
