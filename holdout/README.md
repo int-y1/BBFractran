@@ -111,5 +111,7 @@ TODO: Find a machine in `sz23_790335.txt`, not in `sz23_halted_6867.txt`, and ha
 * `sz24_298146.txt` (Sep 6, 2026): After applying `bp_prefix`, an improved version of "Beeping Permutation". (See warning above about BP.)
 * `sz24_231444.txt` (Sep 6, 2026): After applying @Shawn Ligocki's simulator `shift-sim-all` with 100000 steps. 66689 halted and 13 were infinite.
   * See `sz24_halted_66689.txt` for a list of machines that halted.
-* `sz24_85738_unofficial.txt` (Sep 6, 2026): After applying the "1D Progress Certificates" decider. This holdouts list is unofficial because the decider was entirely written by Opus 4.8, and no one has reimplemented the decider yet.
-* `sz24_10850_unofficial.txt` (Sep 7, 2026): After applying the "N-Dimensional Progress Certificates" decider. This holdouts list is unofficial because the decider was entirely written by Opus 4.8, and no one has reimplemented the decider yet. I used a time budget of 300s.
+* `sz24_231432.txt` (Sep 12, 2026): After applying @Shawn Ligocki's simulator further.
+  * See `sz24_halted_66689_to_66701.txt` for the 12 machines that halted.
+* `sz24_85726_unofficial.txt` (Sep 12, 2026): After applying the "1D Progress Certificates" decider. This holdouts list is unofficial because the decider was entirely written by Opus 4.8, and no one has reimplemented the decider yet.
+* `sz24_10838_unofficial.txt` (Sep 12, 2026): After applying the "N-Dimensional Progress Certificates" decider. This holdouts list is unofficial because the decider was entirely written by Opus 4.8, and no one has reimplemented the decider yet. I used a time budget of 300s.
