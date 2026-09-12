@@ -1,6 +1,6 @@
 # Holdouts lists
 
-`champions.txt` is a list of champions by increasing order. All of these machines halt. Champions of size 22 and greater have not been proven yet. (TODO: Find champions of size 23, then say "The champion(s) of size 23 might be replaced by a better champion.")
+`champions.txt` is a list of champions by increasing order. All of these machines halt. The 2 champions of size 22 are probviously champions, but have not been proven yet. The 4 champions of size 23 are probviously champions, but have not been proven yet. The 2 champions of size 24 could be replaced by a better champion.
 
 Each holdouts list is stored in a file called `sz(x)_(y).txt`, where `(x)` is the program size and `(y)` is the number of holdouts.
 
