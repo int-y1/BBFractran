@@ -58,6 +58,7 @@ The 6 holdouts were proved non-halting with a formal Lean proof. [link](https://
 * `sz21_9427.txt` (Nov 16, 2025): Direct output from `fractran20251116`. This enumeration attempt also produced `sz19_48.txt` and `sz20_902.txt`.
 * `sz21_798.txt` (Dec 11, 2025): After applying the "Spanning Vectors" and "Power Difference Limit Mod" decider. [link](https://discord.com/channels/960643023006490684/1438019511155691521/1448740671077748847)
 * `sz21_775.txt` (Dec 11, 2025): After running all machines to 10^9 steps ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1448784141788250183) and consider only sz21 machines). 3 machines took 31957632 steps to halt, and this was the record.
+  * See `sz21_halted_23.txt` for a list of machines that halted. The format of each line is `<machine> <steps to halt>`.
 * `sz21_602.txt` (Dec 11, 2025): Convert to [Petri net](https://en.wikipedia.org/wiki/Petri_net), apply [FAST](https://lsv.ens-paris-saclay.fr/Software/fast/), and remove those that are infinite (i.e. non-halting). ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1442928279995809882), but 15 machines were added)
 * `sz21_597.txt` (Dec 22, 2025): After applying the "Power Difference Limit Mod" decider with higher parameters. (The strategy is the same as `sz22_9829.txt`.)
 * `sz21_553.txt` (Dec 31, 2025): After applying the "Integer Spanning Vectors" decider.
@@ -65,8 +66,6 @@ The 6 holdouts were proved non-halting with a formal Lean proof. [link](https://
 * `sz21_140.txt` (Jan 24, 2026): After applying the "Beeping Permutation" decider. (See warning above about BP.)
 
 On Mar 25, 2026, the 140 holdouts were proved non-halting by prompting Claude Opus 4.6 for Lean proofs. See <https://github.com/int-y1/proofs/blob/master/BBfLean/Size21Summary.lean>.
-
-TODO: Create `sz21_halted_23.txt`.
 
 ## Size 22
 
