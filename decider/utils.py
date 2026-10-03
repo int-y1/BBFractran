@@ -63,6 +63,7 @@ def unparse_line(F: list[list[int]], format: int = 0) -> str:
         0 is the format `[x/x, x/x, x/x]` where each `x` is a positive integer.
         1 is vector representation, as a pretty-printed string.
         2 is vector representation, in C++ format.
+        3 is vector representation, in <math> format.
     :return: An FM as a string.
     """
     if format == 0:
@@ -81,5 +82,7 @@ def unparse_line(F: list[list[int]], format: int = 0) -> str:
         return '\n'.join(' '.join(map(lambda i: f'{i: 2d}', inst)) for inst in F)
     elif format == 2:
         return '{{'+'},{'.join(','.join(map(str, inst)) for inst in F)+'}}'
+    elif format == 3:
+        return '<math>\\begin{bmatrix}\n' + ' \\\\\n'.join(' '+' & '.join(map(lambda i: f'{i: 2d}', inst)) for inst in F) + ' \\end{bmatrix}</math>'
     else:
         assert False, 'unknown format'
