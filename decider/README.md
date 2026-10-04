@@ -22,8 +22,8 @@ List of deciders:
   * Warning: this decider hasn't been reviewed / reproduced by the bbchallenge community. Please open an issue if you find a bug.
 * Beeping Permutation (`bp.py`).
   * Warning: this decider hasn't been reviewed / reproduced by the bbchallenge community. Please open an issue if you find a bug.
-* 1D Progress Certificates (`oned_progress.py`).
-  * Warning: this decider was entirely written by AI (Opus 4.8). Until a human reproduces the decider, I will label all results as `unofficial`.
+* 1D Progress Certificates (`oned_progress.py` + `oned_progress_to_lean.py`).
+  * Warning: this decider was entirely written by AI (Opus 4.8). Until I verify all certificates in Lean, I will label all results as `unofficial`.
 * N-Dimensional Progress Certificates (`nd_progress.py`).
   * Warning: this decider was entirely written by AI (Opus 4.8). Until a human reproduces the decider, I will label all results as `unofficial`.
 

@@ -74,25 +74,26 @@ theorem nonhalt{holdout_number} : ¬halts (Q := {' × '.join('ℕ' for _ in rang
 '''
 
 
-holdout_directory = input('Enter holdouts directory (e.g. "Size21"): ').strip()
-os.makedirs(f'other/lean/{holdout_directory}', exist_ok=True)
-holdout_file = input('Enter holdouts list (e.g. "sz21_345"): ').strip()
-holdouts = parse_file(f'holdout/{holdout_file}.txt')
-holdout_min, holdout_max = map(int, input(
-    f'Enter min and max holdout numbers to generate (e.g. enter "1 {len(holdouts)}" to generate all): ').split())
+if __name__ == '__main__':
+    holdout_directory = input('Enter holdouts directory (e.g. "Size21"): ').strip()
+    os.makedirs(f'other/lean/{holdout_directory}', exist_ok=True)
+    holdout_file = input('Enter holdouts list (e.g. "sz21_345"): ').strip()
+    holdouts = parse_file(f'holdout/{holdout_file}.txt')
+    holdout_min, holdout_max = map(int, input(
+        f'Enter min and max holdout numbers to generate (e.g. enter "1 {len(holdouts)}" to generate all): ').split())
 
-summary1 = []
-summary2 = []
+    summary1 = []
+    summary2 = []
 
-for Fi, F in enumerate(holdouts):
-    if not (holdout_min <= Fi+1 <= holdout_max):
-        continue
-    filename, proof_template = fm_to_lean_file(holdout_file, Fi+1, F)
-    with open(f'other/lean/{holdout_directory}/{filename}', 'w', encoding='utf-8') as f:
-        f.write(proof_template)
-    s1, s2 = fm_to_summary(holdout_directory, holdout_file, Fi+1, F)
-    summary1.append(s1)
-    summary2.append(s2)
+    for Fi, F in enumerate(holdouts):
+        if not (holdout_min <= Fi+1 <= holdout_max):
+            continue
+        filename, proof_template = fm_to_lean_file(holdout_file, Fi+1, F)
+        with open(f'other/lean/{holdout_directory}/{filename}', 'w', encoding='utf-8') as f:
+            f.write(proof_template)
+        s1, s2 = fm_to_summary(holdout_directory, holdout_file, Fi+1, F)
+        summary1.append(s1)
+        summary2.append(s2)
 
-with open(f'other/lean/{holdout_directory}Summary.lean', 'w', encoding='utf-8') as f:
-    f.write(''.join(summary1+summary2))
+    with open(f'other/lean/{holdout_directory}Summary.lean', 'w', encoding='utf-8') as f:
+        f.write(''.join(summary1+summary2))

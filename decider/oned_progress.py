@@ -98,6 +98,14 @@ those are completeness rates; sz23_21295 is the open size-23 residual.
 Soundness (a decider must NEVER call a halting machine non-halting).  0 of the 7497
 known-halting machines are decided (sz23_halted_6805 + sz22_halted_692), and every
 decided certificate re-verifies by independent concrete simulation.
+
+--------------------------------------------------------------------------------
+CERTIFICATES.  `oned_progress` returns a one-line summary; `oned_progress_cert`
+returns the whole certificate: the family, the thresholds, the concrete bootstrap
+members with their step counts, and -- for each residue branch -- the symbolic
+transcript that discharges that branch's obligation (see `_sym_run`).  That is
+enough to reconstruct the proof without re-running the search, which is what
+`oned_progress_to_lean.py` does when it emits a Lean 4 proof of non-halting.
 '''
 
 
@@ -277,7 +285,15 @@ def _max_valid_cycles(F, hist, rules, p0, L, Dc, ctx):
     return _umin(bounds, ctx)
 
 
-def _sym_run(F, start, target_test, ctx, max_prim=1500, max_accel=100, max_deg=6, Lmax=48):
+def _sym_run(F, start, target_test, ctx, max_prim=1500, max_accel=100, max_deg=6, Lmax=48,
+             events=None):
+    """Symbolically run `F` from `start` until `target_test` fires.
+
+    If `events` is a list, it receives a replayable transcript of the run:
+    * `('step', j)`             -- rule `j` fires once;
+    * `('accel', cyc, Dc, V)`   -- the rule sequence `cyc` (net delta `Dc`) is
+      repeated `V` times, `V` a polynomial in `m`.
+    Replaying the transcript from `start` reproduces the final state exactly."""
     cur = [_pnorm(p) for p in start]
     for p in cur:
         if _usign(p, ctx) < 0:
@@ -293,6 +309,8 @@ def _sym_run(F, start, target_test, ctx, max_prim=1500, max_accel=100, max_deg=6
         if moved:
             res = target_test(cur, ctx)
             if res is not None:
+                if events is not None:
+                    events.extend(('step', r) for r in rules)
                 return _OK, res
         j = _which_rule(F, cur, ctx)
         if j < 0:
@@ -320,6 +338,9 @@ def _sym_run(F, start, target_test, ctx, max_prim=1500, max_accel=100, max_deg=6
             continue
         if _usign(_psub(V, [3]), ctx) < 0:
             continue
+        if events is not None:
+            events.extend(('step', rules[t]) for t in range(p0))
+            events.append(('accel', rules[p0:p0 + L], list(Dc), list(V)))
         cur = [_pnorm(_padd(S0[i], _pscale(V, Dc[i]))) for i in range(len(S0))]
         accel += 1
         hist = [[list(p) for p in cur]]
@@ -453,7 +474,8 @@ def _target_eq(target):
 
 def _run_pair(F, width, P, As, cs, At, ct, kw):
     """Run one obligation: from f at u = As*m+cs, reach f at u = At*m+ct.
-    P is the list of Fraction polynomials (register forms in u).  Returns m_lo or None."""
+    P is the list of Fraction polynomials (register forms in u).
+    Returns a branch record (dict) or None."""
     start = [_to_int_poly(_subst_affine(p, As, cs)) for p in P]
     tgt = [_to_int_poly(_subst_affine(p, At, ct)) for p in P]
     if any(p is None for p in start) or any(p is None for p in tgt):
@@ -461,24 +483,31 @@ def _run_pair(F, width, P, As, cs, At, ct, kw):
     start += [[]] * (width - len(start))
     tgt += [[]] * (width - len(tgt))
     ctx = _Ctx()
-    tag, _ = _sym_run(F, start, _target_eq(tgt), ctx, **kw)
-    return ctx.m_lo if tag == _OK else None
+    events = []
+    tag, _ = _sym_run(F, start, _target_eq(tgt), ctx, events=events, **kw)
+    if tag != _OK:
+        return None
+    return {'start': start, 'target': [_pnorm(p) for p in tgt],
+            'events': events, 'm_lo': ctx.m_lo}
 
 
 def _verify_additive(F, width, P, Mset, kw):
     """u = index, step u -> u+1.  Verify per residue u = M*m+r for some M in Mset.
-    Returns (M, u0) or None (u0 an index threshold)."""
+    Returns (M, u0, branches) or None (u0 an index threshold)."""
     for M in Mset:
         ok = True
         u0 = 0
+        branches = []
         for r in range(M):
-            mlo = _run_pair(F, width, P, M, r, M, r + 1, kw)
-            if mlo is None:
+            br = _run_pair(F, width, P, M, r, M, r + 1, kw)
+            if br is None:
                 ok = False
                 break
-            u0 = max(u0, M * mlo + r)
+            br['r'] = r
+            branches.append(br)
+            u0 = max(u0, M * br['m_lo'] + r)
         if ok:
-            return (M, u0)
+            return (M, u0, branches)
     return None
 
 
@@ -497,11 +526,12 @@ def _verify_multiplicative(F, width, P, B, kw, jmax=3, Mmul=(1, 2, 3, 4, 6, 8, 1
     can be needed so a drain loop's divisor divides the m-coefficient cleanly (else the
     cycle count is not a clean polynomial and the loop cannot be accelerated).  All M'
     residues must verify; every power B^k lands in one of them, so the chain is covered.
-    Returns (M', u0) or None, with u0 the X-threshold (B-1)*(M'*m_lo_max) + 1."""
+    Returns (M', u0, branches) or None, with u0 the X-threshold (B-1)*(M'*m_lo_max) + 1."""
     Bm1 = B - 1
     for Mp in Mmul:
         ok_all = True
         thr = 0
+        branches = []
         for s in range(Mp):
             A = Bm1 * Mp        # coeff of m in X = (B-1)*(M'm + s) + 1
             c = Bm1 * s + 1     # constant of X
@@ -518,25 +548,30 @@ def _verify_multiplicative(F, width, P, B, kw, jmax=3, Mmul=(1, 2, 3, 4, 6, 8, 1
                 if any(p is None for p in tgt):
                     continue
                 tgt2 = tgt + [[]] * (width - len(tgt))
-                targets.append([_pnorm(x) for x in tgt2])
+                targets.append((j, [_pnorm(x) for x in tgt2]))
             if not targets:
                 ok_all = False
                 break
 
             def test(state, ctx, targets=targets):
-                for tg in targets:
+                for j, tg in targets:
                     if all(_pnorm(state[i]) == tg[i] for i in range(width)):
-                        return True
+                        return j
                 return None
 
             ctx = _Ctx()
-            tag, _ = _sym_run(F, start2, test, ctx, **kw)
+            events = []
+            tag, res = _sym_run(F, start2, test, ctx, events=events, **kw)
             if tag != _OK:
                 ok_all = False
                 break
+            branches.append({'s': s, 'j': res, 'start': [_pnorm(p) for p in start2],
+                             'target': dict(targets)[res], 'events': events,
+                             'm_lo': ctx.m_lo})
             thr = max(thr, Mp * ctx.m_lo + s)   # u = M'*m + s >= M'*m_lo + s
         if ok_all:
-            return (Mp, Bm1 * thr + 1)          # X-threshold = (B-1)*u + 1
+            # X-threshold = (B-1)*u + 1
+            return (Mp, Bm1 * thr + 1, branches)
     return None
 
 
@@ -559,6 +594,7 @@ def _verify_template(F, width, cmap, pc, Mset, kw):
     for M in Mset:
         ok = True
         N0 = 0
+        branches = []
         for r in range(M):
             start = [[] for _ in range(width)]
             for i, cval in cmap.items():
@@ -566,14 +602,19 @@ def _verify_template(F, width, cmap, pc, Mset, kw):
             n_poly = _pnorm([r, M])
             start[pc] = n_poly
             ctx = _Ctx()
-            tag, _ = _sym_run(F, start, _target_template(
-                cmap, pc, n_poly), ctx, **kw)
+            events = []
+            tag, res = _sym_run(F, start, _target_template(
+                cmap, pc, n_poly), ctx, events=events, **kw)
             if tag != _OK:
                 ok = False
                 break
+            target = [list(p) for p in start]
+            target[pc] = _pnorm(res)
+            branches.append({'r': r, 'start': start, 'target': target,
+                             'events': events, 'm_lo': ctx.m_lo})
             N0 = max(N0, M * ctx.m_lo + r)
         if ok:
-            return (M, N0)
+            return (M, N0, branches)
     return None
 
 
@@ -581,11 +622,17 @@ def _verify_template(F, width, cmap, pc, Mset, kw):
 # top-level decider
 # ============================================================================
 
-def oned_progress(F: list[list[int]], step_cap: int = 40000, dmax: int = 3,
-                  Mset=(1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 18), min_occ: int = 5,
-                  window: int = 30, max_offset: int = 8, Mmul=(1, 2, 3, 4, 6)) -> str | None:
+def oned_progress_cert(F: list[list[int]], step_cap: int = 40000, dmax: int = 3,
+                       Mset=(1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 18), min_occ: int = 5,
+                       window: int = 30, max_offset: int = 8,
+                       Mmul=(1, 2, 3, 4, 6)) -> dict | None:
     """Try to prove F (from u_0 = "2") is non-halting via a 1-D progress
-    certificate.  Returns a certificate string or None."""
+    certificate.  Returns a certificate (see `cert_str`) or None.
+
+    The certificate is self-contained: besides the family and the thresholds it
+    carries, for every residue branch, the symbolic transcript that discharges
+    that branch's obligation, plus the concrete bootstrap states (with their
+    step counts from u_0).  That is everything a proof checker needs."""
     width = len(F[0])
     kw = dict(max_prim=1500, max_accel=100, max_deg=6, Lmax=48)
 
@@ -595,15 +642,17 @@ def oned_progress(F: list[list[int]], step_cap: int = 40000, dmax: int = 3,
 
     from collections import defaultdict
     shapes = defaultdict(list)
-    for s in states:
-        shapes[tuple(x == 0 for x in s)].append(s)
+    for t, s in enumerate(states):
+        shapes[tuple(x == 0 for x in s)].append(t)
     ordered = sorted(((sh, occ) for sh, occ in shapes.items() if len(occ) >= min_occ),
                      key=lambda kv: (sum(0 if z else 1 for z in kv[0]), -len(kv[1])))
 
-    for sh, occ in ordered:
+    for sh, occ_t in ordered:
+        occ = [states[t] for t in occ_t]
         nocc = len(occ)
         for offset in range(0, min(max_offset, nocc - 3) + 1):
             body = occ[offset:]
+            body_t = occ_t[offset:]
             if len(body) < 4:
                 break
             fit_seq = body[:window]
@@ -624,14 +673,18 @@ def oned_progress(F: list[list[int]], step_cap: int = 40000, dmax: int = 3,
             if ok and nonconst:
                 res = _verify_additive(F, width, fam, Mset, kw)
                 if res is not None:
-                    M, u0 = res
+                    M, u0, branches = res
                     for j in range(len(body) - 1, -1, -1):
                         pred = [int(_peval_fr(fam[i], j))
                                 for i in range(width)]
                         if pred == list(body[j]):
                             if j >= u0:
                                 deg = max(len(_pnorm_fr(p)) - 1 for p in fam)
-                                return f'ONED_PROGRESS(add,deg={deg},M={M},N0={u0})'
+                                return {'flavour': 'add', 'width': width, 'P': fam,
+                                        'M': M, 'u0': u0, 'deg': deg,
+                                        'branches': branches,
+                                        'anchors': _add_anchors(fam, width, body,
+                                                                body_t, u0, j)}
                             break
                         if j < len(fit_seq):
                             break
@@ -659,7 +712,7 @@ def oned_progress(F: list[list[int]], step_cap: int = 40000, dmax: int = 3,
             if ok and B is not None:
                 res = _verify_multiplicative(F, width, fam, B, kw, Mmul=Mmul)
                 if res is not None:
-                    Mp, X0 = res
+                    Mp, X0, branches = res
                     for k, s in enumerate(body):
                         X = B ** k
                         if X < X0:
@@ -667,7 +720,11 @@ def oned_progress(F: list[list[int]], step_cap: int = 40000, dmax: int = 3,
                         pred = tuple(int(_peval_fr(fam[i], X))
                                      for i in range(width))
                         if pred == tuple(s):
-                            return f'ONED_PROGRESS(mul,B={B},M={Mp},Xlo={X0})'
+                            return {'flavour': 'mul', 'width': width, 'P': fam,
+                                    'B': B, 'M': Mp, 'X0': X0,
+                                    'branches': branches,
+                                    'anchors': _mul_anchors(fam, width, body,
+                                                            body_t, B, k)}
                         break
 
             # ---- TEMPLATE: one free register, reach any larger member -------
@@ -684,11 +741,66 @@ def oned_progress(F: list[list[int]], step_cap: int = 40000, dmax: int = 3,
                 cmap = {i: v for i, v in cmap.items() if i != pc}
                 res = _verify_template(F, width, cmap, pc, Mset, kw)
                 if res is not None:
-                    M, N0 = res
+                    M, N0, branches = res
                     for _t, s in enumerate(occ):
                         if all(s[i] == v for i, v in cmap.items()) and s[pc] >= N0:
-                            return f'ONED_PROGRESS(tmpl,param={pc},M={M},N0={N0})'
+                            return {'flavour': 'tmpl', 'width': width,
+                                    'cmap': dict(cmap), 'pc': pc, 'M': M, 'N0': N0,
+                                    'branches': branches,
+                                    'anchors': _tmpl_anchors(cmap, pc, occ, occ_t, N0)}
     return None
+
+
+def _add_anchors(fam, width, body, body_t, u0, jmax):
+    """Concrete family members f(u) on the real trajectory, u0 <= u <= jmax.
+    Each anchor is (u, step count from u_0, state)."""
+    out = []
+    for j in range(u0, jmax + 1):
+        pred = [int(_peval_fr(fam[i], j)) for i in range(width)]
+        if pred == list(body[j]):
+            out.append((j, body_t[j], tuple(body[j])))
+    return out
+
+
+def _mul_anchors(fam, width, body, body_t, B, k0):
+    """Concrete family members f(B^k) on the real trajectory, k >= k0."""
+    out = []
+    for k in range(k0, len(body)):
+        X = B ** k
+        pred = tuple(int(_peval_fr(fam[i], X)) for i in range(width))
+        if pred != tuple(body[k]):
+            break
+        out.append((X, body_t[k], tuple(body[k])))
+    return out
+
+
+def _tmpl_anchors(cmap, pc, occ, occ_t, N0):
+    """Concrete template members on the real trajectory with parameter >= N0."""
+    out = []
+    for t, s in zip(occ_t, occ):
+        if all(s[i] == v for i, v in cmap.items()) and s[pc] >= N0:
+            out.append((s[pc], t, tuple(s)))
+    return out
+
+
+def cert_str(cert: dict | None) -> str | None:
+    """One-line summary of a certificate (the historical return value)."""
+    if cert is None:
+        return None
+    if cert['flavour'] == 'add':
+        return (f"ONED_PROGRESS(add,deg={cert['deg']},M={cert['M']},"
+                f"N0={cert['u0']})")
+    if cert['flavour'] == 'mul':
+        return (f"ONED_PROGRESS(mul,B={cert['B']},M={cert['M']},"
+                f"Xlo={cert['X0']})")
+    return (f"ONED_PROGRESS(tmpl,param={cert['pc']},M={cert['M']},"
+            f"N0={cert['N0']})")
+
+
+def oned_progress(F: list[list[int]], **kwargs) -> str | None:
+    """Try to prove F (from u_0 = "2") is non-halting via a 1-D progress
+    certificate.  Returns a certificate string or None."""
+    return cert_str(oned_progress_cert(F, **kwargs))
 
 
 if __name__ == '__main__':
