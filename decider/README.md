@@ -23,7 +23,9 @@ List of deciders:
 * Beeping Permutation (`bp.py`).
   * Warning: this decider hasn't been reviewed / reproduced by the bbchallenge community. Please open an issue if you find a bug.
 * 1D Progress Certificates (`oned_progress.py` + `oned_progress_to_lean.py`).
-  * Warning: this decider was entirely written by AI (Opus 4.8). Until I verify all certificates in Lean, I will label all results as `unofficial`.
+  * Warning: the 2 files were entirely written by AI (Opus 4.8).
+  * Warning: `oned_progress_to_lean.py` is only confirmed to work in Lean 4.33.0-rc1. The largest Lean files may use ~7 GB of memory to verify.
+  * All sz23 and sz24 certificates were verified in Lean. `sz23_8021.txt` and `sz24_85726.txt` are official.
 * N-Dimensional Progress Certificates (`nd_progress.py`).
   * Warning: this decider was entirely written by AI (Opus 4.8). Until a human reproduces the decider, I will label all results as `unofficial`.
 

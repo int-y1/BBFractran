@@ -88,16 +88,22 @@ concrete simulation for several values of m before anything is printed.
 --------------------------------------------------------------------------------
 COVERAGE
 
-Checked against the whole of `holdout/sz23_21233.txt` minus
-`holdout/sz23_8021_unofficial.txt` -- all 13212 machines `oned_progress`
-decides, 7956 additive / 4781 multiplicative / 475 template.  Every certificate
-translates, and every one of the 13212 Lean files compiles: no errors, no
-`sorryAx`, 12817 on `[propext]` and 395 on `[propext, Quot.sound]`.
+Checked against every machine `oned_progress` decides in `holdout/sz23_21233.txt`
+minus `holdout/sz23_8021_unofficial.txt` (13212: 7956 additive / 4781
+multiplicative / 475 template) and in `holdout/sz24_231432.txt` minus
+`holdout/sz24_85726_unofficial.txt` (145706: 79108 / 60433 / 6165).  Every
+certificate translates with the default arguments, and every one of the 158918
+Lean files compiles under default options: no errors, no `sorryAx`, only
+`[propext]` or `[propext, Quot.sound]`.
 
-Compiling one file takes 4.2s at the median (mean 7.1s, p95 18s, max 173s);
-67 CPU-hours for the set.  The tail is the bootstrap `c₀ [fm]⊢* f(w)`, which is
-a literal step-by-step run -- `max_boot` caps how long a one the translator will
-accept, at the price of rejecting the certificate.
+With `lean -j1`, one file takes ~5s of CPU at the median (p99 50-63s, max 350s)
+and ~1.6 GiB peak RSS, ~1.5 GiB of which is the shared Mathlib import (max
+7.8 GiB); 32 CPU-hours for sz23 and 314 for sz24.  The tail is the bootstrap
+`c₀ [fm]⊢* f(w)`, which is a literal step-by-step run -- `max_boot` caps how
+long a one the translator will accept, at the price of rejecting the
+certificate.  It is uncapped by default: every anchor is already within
+`oned_progress_cert`'s own `step_cap`, and a cap below that (the old default was
+30000) rejects certificates that are fine.
 """
 
 
@@ -431,6 +437,11 @@ def _fm_lines(F):
 # runs have to be cut into pieces to stay under Lean's `maxRecDepth`.
 _CHUNK = 100
 
+# Heartbeats are per declaration, so a branch whose proof is a long chain of
+# blocks is cut into standalone segment theorems of at most this many blocks.
+# (Chains of 89+ blocks have been seen to exceed the default 200000.)
+_SEG = 32
+
 
 def _boot(F, W, steps, st):
     """`c₀ [fm]⊢* <anchor>`.
@@ -577,24 +588,49 @@ class _Emitter:
         plus = next(k for k, b in enumerate(blocks) if b[2].startswith('by execute'))
         blocks[plus][3] = True
 
-        lines = ([f'/-- {doc} -/'] if doc else []) + [
-                 f'theorem {name} ({var} : ℕ) :',
-                 f'    (⟨{_lean_state(start, var)}⟩ : Q) [fm]⊢⁺ '
-                 f'⟨{_lean_state(end, var)}⟩ := by']
+        head = ([f'/-- {doc} -/'] if doc else []) + [
+                f'theorem {name} ({var} : ℕ) :',
+                f'    (⟨{_lean_state(start, var)}⟩ : Q) [fm]⊢⁺ '
+                f'⟨{_lean_state(end, var)}⟩ := by']
+        if len(blocks) <= _SEG:
+            return '\n'.join(head + self._chain(blocks, plus, var))
+
+        # too long for one heartbeat budget: each segment becomes its own
+        # theorem, and the branch theorem chains the segments
+        segs, out = [], []
+        for g, a in enumerate(range(0, len(blocks), _SEG)):
+            seg = blocks[a:a + _SEG]
+            p = plus - a if a <= plus < a + _SEG else None
+            arrow = '⊢*' if p is None else '⊢⁺'
+            out.append('\n'.join([
+                f'theorem {name}_seg{g} ({var} : ℕ) :',
+                f'    (⟨{_lean_state(seg[0][0], var)}⟩ : Q) [fm]{arrow} '
+                f'⟨{_lean_state(seg[-1][1], var)}⟩ := by']
+                + self._chain(seg, p, var)) + '\n')
+            segs.append([seg[0][0], seg[-1][1], f'{name}_seg{g} {var}', p is not None])
+        return '\n'.join(out + head + self._chain(segs, plus // _SEG, var))
+
+    @staticmethod
+    def _chain(blocks, plus, var):
+        """`have h_k` per block, then their composition (`⊢⁺` iff `plus` is set)."""
+        lines = []
         for k, b in enumerate(blocks):
             arrow = '⊢⁺' if b[3] else '⊢*'
             lines.append(f'  have h{k} : (⟨{_lean_state(b[0], var)}⟩ : Q) [fm]{arrow} '
                          f'⟨{_lean_state(b[1], var)}⟩ := {b[2]}')
         lines.append('  exact ' + _compose(len(blocks), plus))
-        return '\n'.join(lines)
+        return lines
 
 
 def _compose(n, plus):
-    """Fold h0..h_{n-1} into a single `⊢⁺`, with block `plus` supplying the `⁺`."""
+    """Fold h0..h_{n-1} into a single `⊢⁺`, with block `plus` supplying the `⁺`,
+    or into a single `⊢*` if `plus` is None."""
     def star(a, b):                 # h_a .. h_{b-1}, all ⊢*
         if b - a == 1:
             return f'h{a}'
         return f'(stepStar_trans h{a} {star(a + 1, b)})'
+    if plus is None:
+        return star(0, n)
     out = f'h{plus}'
     if plus + 1 < n:
         out = f'(stepPlus_stepStar_stepPlus {out} {star(plus + 1, n)})'
@@ -819,11 +855,12 @@ def _build_tmpl(F, W, maxneed, cert, T, anchor):
 # ============================================================================
 
 def oned_progress_to_lean(F: list[list[int]], cert: dict, name: str = 'Foo',
-                          max_boot: int = 30000) -> str:
+                          max_boot: int | None = None) -> str:
     """Translate a `oned_progress` certificate for `F` into a Lean 4 file.
 
     `name` is used both as the module name and as the namespace, so the result
-    belongs in `<name>.lean`.  Raises `TranslationError` on failure."""
+    belongs in `<name>.lean`.  `max_boot`, if given, rejects bootstraps longer
+    than that many steps.  Raises `TranslationError` on failure."""
     if cert is None:
         raise TranslationError('no certificate')
     _check_ident(name)
@@ -918,12 +955,15 @@ def oned_progress_to_lean_dir(pairs: list[tuple[list[list[int]], dict]],
 def _setups(cert, max_boot, tries=40):
     """Candidate (shift, concrete anchor) pairs, cheapest bootstrap first."""
     mlo = [b['m_lo'] for b in cert['branches']]
+
+    def too_long(steps):
+        return max_boot is not None and steps > max_boot
     if cert['flavour'] == 'add':
         M = cert['M']
         for u, steps, state in cert['anchors']:
             T, r0 = divmod(u, M)
             shifts = [T if r >= r0 else T + 1 for r in range(M)]
-            if steps > max_boot or any(s < lo for s, lo in zip(shifts, mlo)):
+            if too_long(steps) or any(s < lo for s, lo in zip(shifts, mlo)):
                 continue
             yield (r0, shifts, (u, steps, state))
             tries -= 1
@@ -936,14 +976,14 @@ def _setups(cert, max_boot, tries=40):
             for X, steps, state in cert['anchors']:
                 n = (X - 1) // (B - 1)
                 if n // Mp >= T:
-                    if steps <= max_boot:
+                    if not too_long(steps):
                         yield T, (X, steps, state, n // Mp - T, n % Mp)
                     break
         else:
             M = cert['M']
             for n, steps, state in cert['anchors']:
                 if n >= M * T:
-                    if steps <= max_boot:
+                    if not too_long(steps):
                         yield T, (n, steps, state)
                     break
 

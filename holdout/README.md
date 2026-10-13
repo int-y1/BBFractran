@@ -17,6 +17,8 @@ TODO:
 * Dec 27, 2025: Removed vector representation from `sz20_1827.txt` and `sz20_902.txt`.
 * Jul 23, 2026: `sz21_140_unofficial.txt` was renamed to `sz21_140.txt`.
 * Jul 23, 2026: `sz22_2003_unofficial.txt` was renamed to `sz22_2003.txt`.
+* Oct 13, 2026: `sz23_8021_unofficial.txt` was renamed to `sz23_8021.txt`.
+* Oct 13, 2026: `sz24_85726_unofficial.txt` was renamed to `sz24_85726.txt`.
 
 ## Size 17
 
@@ -96,7 +98,7 @@ On Mar 25, 2026, the 140 holdouts were proved non-halting by prompting Claude Op
   * See `sz23_halted_6805.txt` for a list of machines that halted.
 * `sz23_21233.txt` (Jul 10, 2026): After simulating machines until halt. ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1525198083363967136)) (First found by Opus 4.8. Thanks @Shawn Ligocki for strengthening the simulator and verifying the results.)
   * See `sz23_halted_6867.txt` for a list of machines that halted.
-* `sz23_8021_unofficial.txt` (Jul 23, 2026): After applying the "1D Progress Certificates" decider. This holdouts list is unofficial because the decider was entirely written by Opus 4.8, and no one has reimplemented the decider yet.
+* `sz23_8021.txt` (Jul 23, 2026): After applying the "1D Progress Certificates" decider. On Oct 13, 2026, all 13212 certificates were verified in Lean 4.33.0-rc1 in ~32 core-hours.
 * `sz23_703_unofficial.txt` (Jul 25, 2026): After applying the "N-Dimensional Progress Certificates" decider. This holdouts list is unofficial because the decider was entirely written by Opus 4.8, and no one has reimplemented the decider yet. I used a time budget of 300s.
 * `sz23_694_unofficial.txt` (Jul 25, 2026): After applying the "N-Dimensional Progress Certificates" decider with a time budget of 3600s.
 * `sz23_13_unofficial.txt` (Aug 4, 2026): After prompting Claude Opus 4.8 / 5 for Lean proofs of `sz23_694_unofficial.txt`. See <https://github.com/int-y1/proofs/blob/master/BBfLean/Size23Summary.lean>. If all 13 holdouts are proved non-halting, BBf(23) would be (unofficially) solved.
@@ -112,5 +114,5 @@ TODO: Find a machine in `sz23_790335.txt`, not in `sz23_halted_6867.txt`, and ha
   * See `sz24_halted_66689.txt` for a list of machines that halted.
 * `sz24_231432.txt` (Sep 12, 2026): After applying @Shawn Ligocki's simulator further.
   * See `sz24_halted_66689_to_66701.txt` for the 12 machines that halted.
-* `sz24_85726_unofficial.txt` (Sep 12, 2026): After applying the "1D Progress Certificates" decider. This holdouts list is unofficial because the decider was entirely written by Opus 4.8, and no one has reimplemented the decider yet.
+* `sz24_85726.txt` (Sep 12, 2026): After applying the "1D Progress Certificates" decider. On Oct 13, 2026, all 145706 certificates were verified in Lean 4.33.0-rc1 in ~314 core-hours.
 * `sz24_10838_unofficial.txt` (Sep 12, 2026): After applying the "N-Dimensional Progress Certificates" decider. This holdouts list is unofficial because the decider was entirely written by Opus 4.8, and no one has reimplemented the decider yet. I used a time budget of 300s.

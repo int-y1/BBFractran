@@ -16,6 +16,4 @@ Claude Opus 4.8 wrote `decider/oned_progress.py` and `decider/nd_progress.py`. T
 
 `decider/oned_progress_to_lean.py` converts `oned_progress` certificates into Lean proofs.
 
-TODO: Verify that all `oned_progress` certificates are correct.
-
-TODO: Write a program that converts `nd_progress` certificates into Lean proofs.
+TODO: Write a program that converts `nd_progress` certificates into Lean proofs. Then verify that all `nd_progress` certificates are correct.
