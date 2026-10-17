@@ -22,7 +22,9 @@ the entry point is a module-level function, so it works under multiprocessing.
 WHAT IT PROVES.  Non-halting via a parameterized INVARIANT REGION — the automated
 analogue of the size-22 Lean `progress_nonhalt` proofs.  A canonical family C(x)
 places N in {2,3} parameters x = (x_0,...,x_{N-1}) into the N *varying* registers of
-a fixed zero-pattern "shape" (all other registers 0).  The certificate is a polyhedron
+a fixed zero-pattern "shape" (every other register keeps the constant value it has
+throughout that shape on the trajectory -- 0 in most certificates, otherwise listed
+in the certificate as 'consts').  The certificate is a polyhedron
 P of small-integer linear inequalities on x such that:
 
     for every x in P,  C(x)  [F]|-+  (some member of P)
@@ -57,7 +59,12 @@ SOUNDNESS DISCIPLINE (the soundness-critical engine, `verify_region` / `verify_c
     decision that cannot be made cleanly => undecided (never optimistic);
   * rational relaxation is sound for the ">= 0" facts we conclude (rational-feasible
     superset of the integer points), and the integer {g <= -1} split branch keeps the
-    case analysis exhaustive over the actual integer parameters.
+    case analysis exhaustive over the actual integer parameters;
+  * the family the engine verifies is exactly the one the bootstrap state belongs to:
+    every non-parameter register starts (and must end) at its constant value in the
+    shape, and `find_bootstrap` re-checks membership.  (Earlier versions put 0 in
+    every non-parameter register, so a shape with a constant non-zero register got a
+    proof about the wrong family; 8 sz23 certificates were affected.)
 
 --------------------------------------------------------------------------------
 RESULTS (decided / total; combined 1DPC ∪ NDPC, where 1DPC is the sibling 1-D decider):
@@ -95,6 +102,10 @@ USAGE.
         F is a list of int DELTA vectors: state 2^a0*3^a1*5^a2... is [a0,a1,...] and a
         rule a/b is (exponents of a) - (exponents of b); rule j fires at state u iff
         u[i]+F[j][i] >= 0 for all i; the first applicable rule fires; start state = 2.
+    nd_progress_cert(F) -> cert dict | None
+        The same decision, returning the certificate together with the engine's proof
+        trees (one per residue class, see `verify_config`); `cert_str(cert)` is the
+        `nd_progress` string.  `nd_progress_to_lean.py` turns it into a Lean proof.
     render_cert(cert[, prog]) -> a human-readable rendering of the invariant region.
 """
 
@@ -450,13 +461,19 @@ def compute_V(F, hist, rules, p0, L, Dc, Phi, nvars):
 CONTINUE = 'continue'
 
 
-def do_step(F, regs, hist, rules, Phi, nvars, target_test, moved, bud, Lmax):
+def do_step(F, regs, hist, rules, Phi, nvars, target_test, moved, bud, Lmax, ev=None):
     """Perform one symbolic transition from (regs,hist,rules).  Returns
     (status, regs', hist', rules') where status in {OK, HALT, BUDGET, CONTINUE}.
-    Pure w.r.t. inputs (no mutation); raises NeedSplit on ambiguity."""
+    Pure w.r.t. inputs (no mutation); raises NeedSplit on ambiguity.
+
+    If `ev` is a list, the steps that this call commits to are appended to it
+    (see `verify_config`); nothing is appended when NeedSplit/NeedAssume/
+    NeedModulus is raised."""
     nregs = len(regs)
     # degree is always 1 (affine); nothing to guard there.
     if moved and target_test(regs, Phi):
+        if ev is not None:
+            ev.extend(('step', r) for r in rules)
         return OK, regs, hist, rules
     if bud.prim >= bud.max_prim or bud.accel >= bud.max_accel:
         return BUDGET, regs, hist, rules
@@ -479,6 +496,9 @@ def do_step(F, regs, hist, rules, Phi, nvars, target_test, moved, bud, Lmax):
         if all(is_const(dp) for dp in Delta):
             Dc = [dp[-1] for dp in Delta]
             if all(x == 0 for x in Dc):
+                if ev is not None:
+                    ev.extend(('step', r) for r in newrules[:p0])
+                    ev.append(('loop', newrules[p0:p0 + Lp]))
                 return OK, newregs, newhist, newrules   # net-zero cycle => loop forever
             V = compute_V(F, newhist, newrules, p0, Lp, Dc, Phi, nvars)
             if V is not None and not is_const(V):
@@ -492,6 +512,9 @@ def do_step(F, regs, hist, rules, Phi, nvars, target_test, moved, bud, Lmax):
                     jumped = [add(S0[i], scale(V, Dc[i]))
                               for i in range(nregs)]
                     bud.accel += 1
+                    if ev is not None:
+                        ev.extend(('step', r) for r in newrules[:p0])
+                        ev.append(('accel', newrules[p0:p0 + Lp], Dc, V))
                     return CONTINUE, jumped, [jumped], []
                 raise NeedAssume(gate)
     return CONTINUE, newregs, newhist, newrules
@@ -501,10 +524,24 @@ def do_step(F, regs, hist, rules, Phi, nvars, target_test, moved, bud, Lmax):
 # region-splitting driver
 # ---------------------------------------------------------------------------
 
-def verify_config(F, regs, hist, rules, Phi, nvars, target_test, moved, bud, Lmax, depth=0):
+def verify_config(F, regs, hist, rules, Phi, nvars, target_test, moved, bud, Lmax, depth=0,
+                  node=None, ev=None):
     """Verify the obligation from the current config, splitting the region as
     needed.  Returns True iff this config AND all its region-splits reach a
-    target member (or a net-zero cycle) without halting / running out of budget."""
+    target member (or a net-zero cycle) without halting / running out of budget.
+
+    If `node` is a dict (and `ev` the list of events committed so far on this
+    path), the proof is recorded into it as a tree:
+      {'kind': 'empty'}                         -- the region is infeasible
+      {'kind': 'split', 'g': g, 'ge': .., 'le': ..}
+                                                -- case split {g >= 0} / {g <= -1}
+      {'kind': 'leaf', 'events': ev, 'end': regs}
+                                                -- the whole run on this region
+    where `ev` is the transcript from the start config:
+      ('step', j)              -- rule j fires once
+      ('accel', cyc, Dc, V)    -- the rule block `cyc` (net delta Dc) runs V times
+      ('loop', cyc)            -- the rule block `cyc` has net delta 0 (last event)
+    Recording does not influence any decision."""
     bud.configs += 1
     if bud.configs > bud.max_configs:
         return False
@@ -513,25 +550,35 @@ def verify_config(F, regs, hist, rules, Phi, nvars, target_test, moved, bud, Lma
     # NOT know the region is empty, so we must NOT vacuously succeed — fail instead.
     st = feasible(Phi, nvars)
     if st == INFEAS:
+        if node is not None:
+            node['kind'] = 'empty'
         return True                     # provably empty region: vacuously verified
     if st == UNKNOWN:
         return False                    # cannot certify feasibility -> cannot verify
     while True:
         try:
             status, regs, hist, rules = do_step(
-                F, regs, hist, rules, Phi, nvars, target_test, moved, bud, Lmax)
+                F, regs, hist, rules, Phi, nvars, target_test, moved, bud, Lmax, ev)
         except NeedSplit as e:
             g = e.g
             neg = scale(g, -1)
             # g <= -1  <=>  -g-1 >= 0
             neg[-1] -= 1
+            lnode = rnode = None
+            if node is not None:
+                lnode, rnode = {}, {}
+                node.update(kind='split', g=list(g), ge=lnode, le=rnode)
             left = verify_config(F, regs, hist, rules, Phi + [(list(g), False)],
-                                 nvars, target_test, moved, bud, Lmax, depth + 1)
+                                 nvars, target_test, moved, bud, Lmax, depth + 1,
+                                 lnode, None if ev is None else list(ev))
             if not left:
                 return False
             return verify_config(F, regs, hist, rules, Phi + [(neg, False)],
-                                 nvars, target_test, moved, bud, Lmax, depth + 1)
+                                 nvars, target_test, moved, bud, Lmax, depth + 1,
+                                 rnode, None if ev is None else list(ev))
         if status == OK:
+            if node is not None:
+                node.update(kind='leaf', events=ev, end=regs)
             return True
         if status == HALT or status == BUDGET:
             return False
@@ -578,26 +625,36 @@ def _translate_assumption(g, moduli, residues):
 
 
 def _verify_residue(F, width, param_regs, P, nvars, param_subst, zero_regs,
-                    Lmax, max_prim, max_accel, max_configs):
+                    Lmax, max_prim, max_accel, max_configs, out=None, consts=None):
     """Verify the obligation for ONE residue substitution `param_subst` (a list
     of N affine forms giving each actual param as M_k*m_k + r_k) under invariant
     P (constraints over the actual params).  Returns 'ok', 'fail', or ('assume', g)
-    where g is an affine form over the m-variables to be assumed (>= 0)."""
+    where g is an affine form over the m-variables to be assumed (>= 0).
+
+    `zero_regs` are the non-parameter registers; each holds 0 in the family C,
+    except those in `consts` ({register: value}), which hold that constant.
+
+    If `out` is a dict, a successful verification is recorded into it as a proof
+    tree over the m-variables (see `verify_config`)."""
+    consts = consts or {}
     # start state C over the m-variables
-    regs = [const_form(0, nvars) for _ in range(width)]
+    regs = [const_form(consts.get(i, 0), nvars) for i in range(width)]
     for k, pr in enumerate(param_regs):
         regs[pr] = list(param_subst[k])
     # initial region Phi = P composed with the substitution (over m)
     Phi = [(_compose(q, param_subst, nvars), False) for q in P]
     st = feasible(Phi, nvars)
     if st == INFEAS:
+        if out is not None:
+            out['kind'] = 'empty'
         return 'ok'                          # provably empty residue: vacuously true
     if st == UNKNOWN:
         return 'fail'                        # cannot certify feasibility -> fail
 
     def target_test(cur, Phi):
         for i in zero_regs:
-            if not uniform_zero(Phi, nvars, cur[i]):
+            f = cur[i] if i not in consts else add(cur[i], const_form(-consts[i], nvars))
+            if not uniform_zero(Phi, nvars, f):
                 return False
         reached = [cur[pr]
                    for pr in param_regs]      # actual x' as forms over m
@@ -609,7 +666,8 @@ def _verify_residue(F, width, param_regs, P, nvars, param_subst, zero_regs,
     bud = Budget(max_prim, max_accel, max_configs)
     try:
         ok = verify_config(F, regs, [list(regs)], [], Phi, nvars,
-                           target_test, False, bud, Lmax)
+                           target_test, False, bud, Lmax,
+                           node=out, ev=None if out is None else [])
     except NeedAssume as e:
         return ('assume', list(e.g))
     except NeedModulus as e:
@@ -619,11 +677,13 @@ def _verify_residue(F, width, param_regs, P, nvars, param_subst, zero_regs,
 
 def verify_region(F, width, param_regs, region, nvars, moduli=None, Lmax=48,
                   max_prim=4000, max_accel=300, max_configs=6000, max_restart=30,
-                  max_moduli_product=48):
+                  max_moduli_product=48, record=False, consts=None):
     """Prove: for all x in the invariant region P, C(x) [F]|-+ (member of P),
     which proves non-halting (progress_nonhalt).
 
     param_regs : register indices carrying the N parameters (len N).
+    consts     : {register: value} for the non-parameter registers that are not 0
+                 in the family C (default: none).
     region     : list of affine forms over the N params, each meaning ">= 0".
     moduli     : per-parameter residue-split moduli (x_k = M_k*m_k + r_k); every
                  residue combo is verified, so the union covers all params.  A
@@ -632,6 +692,9 @@ def verify_region(F, width, param_regs, region, nvars, moduli=None, Lmax=48,
 
     Returns the FINAL invariant P (list of affine forms over the params, including
     any region-shrinking assumptions) on success, or None.
+
+    With `record`, the result also carries 'trees': {residues: proof tree} from
+    the final (successful) pass, see `verify_config`.
     """
     if moduli is None:
         moduli = [1 for _ in range(nvars)]
@@ -646,8 +709,13 @@ def verify_region(F, width, param_regs, region, nvars, moduli=None, Lmax=48,
             p *= m
         return p
 
+    trees = {}
+
     def _ret(ok):
-        return {'ok': ok, 'P': P if ok else None, 'moduli': list(moduli)}
+        res = {'ok': ok, 'P': P if ok else None, 'moduli': list(moduli)}
+        if record:
+            res['trees'] = trees if ok else None
+        return res
 
     for _restart in range(max_restart):
         Phi0 = [(list(q), False) for q in P]
@@ -655,14 +723,18 @@ def verify_region(F, width, param_regs, region, nvars, moduli=None, Lmax=48,
             return _ret(False)
         restart_needed = False
         failed = False
+        trees = {}
         for residues in itertools.product(*[range(M) for M in moduli]):
             subst = []
             for k in range(nvars):
                 f = const_form(residues[k], nvars)
                 f[k] = moduli[k]                     # M_k*m_k + r_k
                 subst.append(f)
+            out = {} if record else None
             res = _verify_residue(F, width, param_regs, P, nvars, subst, zero_regs,
-                                  Lmax, max_prim, max_accel, max_configs)
+                                  Lmax, max_prim, max_accel, max_configs, out, consts)
+            if record and res == 'ok':
+                trees[residues] = out
             if res == 'ok':
                 continue
             if res == 'fail':
@@ -1016,9 +1088,14 @@ def in_region(point, P):
     return True
 
 
-def find_bootstrap(occ, param_regs, P):
-    """Earliest concrete canonical orbit state whose params lie in the final P."""
+def find_bootstrap(occ, param_regs, P, consts=None):
+    """Earliest concrete canonical orbit state whose params lie in the final P,
+    and which is a member of the family (non-parameter registers 0, or their value
+    in `consts`)."""
+    consts = consts or {}
     for t, s in occ:
+        if any(s[i] != consts.get(i, 0) for i in range(len(s)) if i not in param_regs):
+            continue
         pt = [s[r] for r in param_regs]
         if in_region(pt, P):
             return (t, list(s))
@@ -1030,7 +1107,8 @@ def find_bootstrap(occ, param_regs, P):
 # ---------------------------------------------------------------------------
 
 def _decide_2d(F, width, step_cap=40000, min_occ=6, max_shapes=4,
-               nvar_set=(2, 3), engine_kw=None, max_regions=80, time_budget=300.0):
+               nvar_set=(2, 3), engine_kw=None, max_regions=80, time_budget=300.0,
+               record=False):
     t_start = time()
     if engine_kw is None:
         # fail-fast budget for detection; genuine certs verify in <150 configs, so
@@ -1052,6 +1130,10 @@ def _decide_2d(F, width, step_cap=40000, min_occ=6, max_shapes=4,
             break
         nvars = len(vr)
         param_regs = vr
+        # the non-varying registers keep their value throughout the shape; the
+        # family must carry it (the engine starts every run from C(x), and the
+        # bootstrap state has to be a member)
+        consts = {i: occ[0][1][i] for i in range(width) if i not in vr and occ[0][1][i]}
         pts = [tuple(s[r] for r in param_regs) for _, s in occ]
         ncand = 0
         # reuse discovered residue-split across regions
@@ -1061,7 +1143,8 @@ def _decide_2d(F, width, step_cap=40000, min_occ=6, max_shapes=4,
             if ncand > max_regions or (time_budget > 0 and time() - t_start > time_budget):
                 break
             res = verify_region(F, width, param_regs, region, nvars,
-                                moduli=list(moduli_hint), **engine_kw)
+                                moduli=list(moduli_hint), record=record, consts=consts,
+                                **engine_kw)
             # thread discovered moduli forward, but never past the product cap
             cap = engine_kw.get('max_moduli_product', 48)
             cand_hint = [max(moduli_hint[k], res['moduli'][k])
@@ -1074,12 +1157,17 @@ def _decide_2d(F, width, step_cap=40000, min_occ=6, max_shapes=4,
             if not res['ok']:
                 continue
             P, moduli = res['P'], res['moduli']
-            boot = find_bootstrap(occ, param_regs, P)
+            boot = find_bootstrap(occ, param_regs, P, consts)
             if boot is None:
                 continue
-            return {'shape': sh, 'param_regs': param_regs, 'nvars': nvars,
-                    'P': P, 'moduli': moduli, 'region0': region,
-                    'boot_t': boot[0], 'boot_state': boot[1]}
+            cert = {'shape': sh, 'param_regs': param_regs}
+            if consts:
+                cert['consts'] = consts
+            cert.update({'nvars': nvars, 'P': P, 'moduli': moduli, 'region0': region,
+                         'boot_t': boot[0], 'boot_state': boot[1]})
+            if record:
+                cert['trees'] = res['trees']
+            return cert
     return None
 
 
@@ -1140,10 +1228,12 @@ def render_cert(cert, prog=None):
     pnames = [reg_name[r] for r in pregs]
     nvars = cert['nvars']
 
-    # canonical family vector: param registers show their letter, others 0
+    # canonical family vector: param registers show their letter, others 0 (or
+    # their constant value)
+    consts = cert.get('consts', {})
     fam = []
     for i in range(width):
-        fam.append(reg_name[i] if i in pregs else '0')
+        fam.append(reg_name[i] if i in pregs else str(consts.get(i, 0)))
     fam_str = '⟨' + ', '.join(fam) + '⟩'
     prime_pow = '·'.join(f'{p}^{fam[i]}' for i, p in
                          zip(range(width), [2, 3, 5, 7, 11, 13, 17][:width]))
@@ -1177,6 +1267,30 @@ def render_cert(cert, prog=None):
 # ===========================================================================
 # public entry point (module-level; multiprocessing-friendly)
 # ===========================================================================
+
+
+def nd_progress_cert(F, step_cap=40000, time_budget=300.0):
+    """Like `nd_progress`, but returns the whole certificate as a dict, or None.
+
+    Besides the keys of the `nd_progress` string ('shape', 'param_regs', ['consts',]
+    'nvars', 'P', 'moduli', 'region0', 'boot_t', 'boot_state') it carries
+      'trees' : {residues: proof tree}  -- for every residue class
+                (x_k = moduli[k]*m_k + residues[k]), the engine's case analysis
+                over the m-variables and, at each leaf, the symbolic transcript
+                that discharges it (see `verify_config`).
+    That is everything needed to reconstruct the proof without re-running the
+    search; `nd_progress_to_lean.py` turns it into a Lean proof."""
+    width = len(F[0])
+    return _decide_2d(F, width, step_cap=step_cap, time_budget=time_budget, record=True)
+
+
+def cert_str(cert):
+    """The `nd_progress` string for a certificate (the proof trees are omitted)."""
+    if cert is None:
+        return None
+    keys = ('shape', 'param_regs', 'consts', 'nvars', 'P', 'moduli', 'region0', 'boot_t',
+            'boot_state')
+    return f"ND_PROGRESS({ {k: cert[k] for k in keys if k in cert}!r})"
 
 
 def nd_progress(F, step_cap=40000, time_budget=300.0):

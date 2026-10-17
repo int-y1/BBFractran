@@ -12,8 +12,10 @@ Work more on register machines (see `register/`).
 
 ---
 
-Claude Opus 4.8 wrote `decider/oned_progress.py` and `decider/nd_progress.py`. Try reimplementing and understanding these 2 deciders.
+Write a decider that provides Lean proofs.
 
-`decider/oned_progress_to_lean.py` converts `oned_progress` certificates into Lean proofs.
+For example, see `oned_progress.py`+`oned_progress_to_lean.py` and `nd_progress.py`+`nd_progress_to_lean.py`.
 
-TODO: Write a program that converts `nd_progress` certificates into Lean proofs. Then verify that all `nd_progress` certificates are correct.
+---
+
+Try understanding the AI-written deciders (1DPC, NDPC).

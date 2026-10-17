@@ -23,10 +23,12 @@ List of deciders:
 * Beeping Permutation (`bp.py`).
   * Warning: this decider hasn't been reviewed / reproduced by the bbchallenge community. Please open an issue if you find a bug.
 * 1D Progress Certificates (`oned_progress.py` + `oned_progress_to_lean.py`).
-  * Warning: the 2 files were entirely written by AI (Opus 4.8).
-  * Warning: `oned_progress_to_lean.py` is only confirmed to work in Lean 4.33.0-rc1. The largest Lean files may use ~7 GB of memory to verify.
-  * All sz23 and sz24 certificates were verified in Lean. `sz23_8021.txt` and `sz24_85726.txt` are official.
-* N-Dimensional Progress Certificates (`nd_progress.py`).
-  * Warning: this decider was entirely written by AI (Opus 4.8). Until a human reproduces the decider, I will label all results as `unofficial`.
+  * These 2 files were entirely written by AI (Opus 4.8).
+  * `sz23_8021.txt` and `sz24_85726.txt` are official, and all 1DPC certificates were verified in Lean 4.33.0-rc1.
+  * Warning: The largest Lean files may use ~7 GB of memory to verify. It is still possible for 1DPC to have a bug.
+* N-Dimensional Progress Certificates (`nd_progress.py` + `nd_progress_to_lean.py`).
+  * These 2 files were entirely written by AI (Opus 4.8 and 5.5).
+  * `sz23_694.txt` and `sz24_10572.txt` are official, and all NDPC certificates were verified in Lean 4.33.0-rc1.
+  * Warning: The largest Lean files may use ~11 GB of memory to verify. It is still possible for NDPC to have a bug.
 
 Historical note: `graph_search.py` implements the Power Limit decider, but this decider is very weak and not worth preserving. `graph_search2.py` is the old name of `graph_plm.py`. `graph_search3.py` is the old name of `graph_pdlm.py`.
