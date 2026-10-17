@@ -108,7 +108,7 @@ On Mar 25, 2026, the 140 holdouts were proved non-halting by prompting Claude Op
 * `sz23_703.txt` (Jul 25, 2026): After applying the "N-Dimensional Progress Certificates" decider with a time budget of 300s.
 * `sz23_694.txt` (Jul 25, 2026): After applying the "N-Dimensional Progress Certificates" decider with a time budget of 3600s.
   * Oct 16, 2026: All 7327 NDPC certificates were verified in Lean 4.33.0-rc1 in ~30 core-hours. This holdouts list became official.
-* `sz23_13.txt` (Aug 4, 2026): After prompting Claude Opus 4.8 / 5 for Lean proofs of `sz23_694_unofficial.txt`. See <https://github.com/int-y1/proofs/blob/master/BBfLean/Size23Summary.lean>. If all 13 holdouts are proved non-halting, BBf(23) would be solved.
+* `sz23_13.txt` (Aug 4, 2026): After prompting Claude Opus 4.8 / 5 for Lean proofs of `sz23_694.txt`. See <https://github.com/int-y1/proofs/blob/master/BBfLean/Size23Summary.lean>. If all 13 holdouts are proved non-halting, BBf(23) would be solved.
 
 TODO: Find a machine in `sz23_790335.txt`, not in `sz23_halted_6867.txt`, and halts. I don't expect this to be possible. If this machine exists, this is either a breakthrough or a bug in my pipeline. (TODO: Try simulating each machine to 10^9 steps.)
 

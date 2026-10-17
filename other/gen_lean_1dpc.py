@@ -17,7 +17,7 @@ SIZE = 23
 if SIZE == 23:
     holdout_directory = 'Size23_1dpc'
     holdouts_before = parse_file(f'holdout/sz23_21233.txt')
-    holdouts_after = parse_file(f'holdout/sz23_8021_unofficial.txt')
+    holdouts_after = parse_file(f'holdout/sz23_8021.txt')
     holdout_file = f'Sz23_{len(holdouts_before) - len(holdouts_after)}'  # mock filename, doesn't really exist
 else:
     assert False, 'unsupported SIZE'

@@ -25,10 +25,12 @@ List of deciders:
 * 1D Progress Certificates (`oned_progress.py` + `oned_progress_to_lean.py`).
   * These 2 files were entirely written by AI (Opus 4.8).
   * `sz23_8021.txt` and `sz24_85726.txt` are official, and all 1DPC certificates were verified in Lean 4.33.0-rc1.
-  * Warning: The largest Lean files may use ~7 GB of memory to verify. It is still possible for 1DPC to have a bug.
+  * Warning: The largest Lean files may use ~7 GB of memory to verify.
+  * Warning: Verifying the certificates in Lean is necessary. It is still possible for 1DPC to have a bug.
 * N-Dimensional Progress Certificates (`nd_progress.py` + `nd_progress_to_lean.py`).
   * These 2 files were entirely written by AI (Opus 4.8 and 5.5).
   * `sz23_694.txt` and `sz24_10572.txt` are official, and all NDPC certificates were verified in Lean 4.33.0-rc1.
-  * Warning: The largest Lean files may use ~11 GB of memory to verify. It is still possible for NDPC to have a bug.
+  * Warning: The largest Lean files may use ~11 GB of memory to verify.
+  * Warning: Verifying the certificates in Lean is necessary. It is still possible for NDPC to have a bug.
 
 Historical note: `graph_search.py` implements the Power Limit decider, but this decider is very weak and not worth preserving. `graph_search2.py` is the old name of `graph_plm.py`. `graph_search3.py` is the old name of `graph_pdlm.py`.
