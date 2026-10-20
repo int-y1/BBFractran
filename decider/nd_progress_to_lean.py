@@ -6,6 +6,7 @@ from math import floor, gcd
 
 from decider.nd_progress import (_compose as _subst, _simplify_region, cert_str,
                                  implies_ge0, nd_progress_cert)
+from decider.ndr_progress import cert_str as ndr_cert_str
 from decider.oned_progress_to_lean import (TranslationError, _CHUNK, _SEG, _Fail, _boot,
                                            _check_ident, _compose as _chain,
                                            _concrete_step, _fm_lines, _paren, _wrap_text)
@@ -61,6 +62,14 @@ so the file is assembled as
 
 A leaf whose run ends in a net-zero cycle S ⊢⁺ S (never seen in practice, but
 the engine accepts it) is glued to `Pr` through a disjunct `¬halts fm q`.
+
+Certificates of `ndr_progress` may also carry a residue restriction: 'allowed', a
+set of residue vectors mod 'rmod' (each rmod_k divides moduli_k).  Then `Inv` also
+requires (x_0 mod rmod_0, ...) ∈ allowed, written as a disjunction of `x % M = r`
+conjunctions; only the residue classes whose reduction is allowed have trees, the
+others are closed in `progress` by `exfalso; omega`, and every leaf's end state
+must have a uniform, allowed residue (checked while planning, proved by `omega`).
+A certificate without 'allowed' (or with None) is translated exactly as before.
 
 --------------------------------------------------------------------------------
 ℕ COORDINATES
@@ -729,6 +738,12 @@ class _Leaf:
             for q in cx.P:
                 if not R.ge0(_subst(q, xprime, N)):
                     raise _Planning('end state outside the invariant')
+            if cx.allowed is not None:
+                for k in range(N):
+                    if any(c % cx.rmod[k] for c in xprime[k][:-1]):
+                        raise _Planning('end state residue is not uniform')
+                if not cx.admits([f[-1] for f in xprime]):
+                    raise _Planning('end state outside the residue restriction')
         if not any(isinstance(op, _Step) for op in ops):
             ops = _expand(F, W, N, ops, 1)
         planned = []
@@ -940,6 +955,50 @@ class _Context:
         if any(i in self.param_regs or not 0 <= i < W or v < 0
                for i, v in self.consts.items()):
             raise TranslationError('malformed certificate')
+        # optional residue restriction (certificates of `ndr_progress`): the invariant
+        # also requires (x_k mod rmod_k)_k to be in `allowed` (absent: no restriction)
+        self.rmod = self.allowed = None
+        if cert.get('allowed') is not None:
+            rmod = [int(M) for M in cert['rmod']]
+            allowed = {tuple(int(r) for r in a) for a in cert['allowed']}
+            if len(rmod) != N or any(M < 1 or self.moduli[k] % M for k, M in enumerate(rmod)):
+                raise TranslationError('malformed certificate')
+            if not allowed or any(len(a) != N or any(not 0 <= a[k] < rmod[k] for k in range(N))
+                                  for a in allowed):
+                raise TranslationError('malformed certificate')
+            self.rmod, self.allowed = rmod, allowed
+
+    def admits(self, x):
+        """Whether a parameter vector (or a residue key mod `moduli`) satisfies the
+        residue restriction."""
+        return self.allowed is None or \
+            tuple(x[k] % self.rmod[k] for k in range(self.N)) in self.allowed
+
+    def residue_prop(self, names):
+        """The residue restriction as a Lean proposition, or None if it is vacuous."""
+        if self.allowed is None:
+            return None
+        allowed = set(self.allowed)
+        ks = []
+        for k in range(self.N):             # drop coordinates the restriction ignores
+            if self.rmod[k] == 1:
+                continue
+            rest = {a[:k] + a[k + 1:] for a in allowed}
+            if len(allowed) == len(rest) * self.rmod[k]:
+                allowed = {a[:k] + (0,) + a[k + 1:] for a in allowed}
+                continue
+            ks.append(k)
+        proj = sorted({tuple(a[k] for k in ks) for a in allowed})
+        total = 1
+        for k in ks:
+            total *= self.rmod[k]
+        if len(proj) == total:
+            return None
+        conj = [' ∧ '.join(f'{names[k]} % {self.rmod[k]} = {a[j]}' for j, k in enumerate(ks))
+                for a in proj]
+        if len(conj) == 1:
+            return conj[0]
+        return ' ∨ '.join(f'({c})' if len(ks) > 1 else c for c in conj)
 
     def const(self, i):
         """The value of the non-parameter register i in the family."""
@@ -1223,7 +1282,7 @@ def nd_progress_to_lean(F: list[list[int]], cert: dict, name: str = 'Foo') -> st
     if not 1 <= W <= 26:
         raise TranslationError('unsupported register count')
     cx = _Context(F, cert)
-    keys = list(itertools.product(*[range(M) for M in cx.moduli]))
+    keys = [k for k in itertools.product(*[range(M) for M in cx.moduli]) if cx.admits(k)]
     if sorted(cert['trees']) != keys:
         raise TranslationError('certificate does not cover every residue class')
     cx.loops = any(_has_loop(cert['trees'][k]) for k in keys)
@@ -1234,7 +1293,7 @@ def nd_progress_to_lean(F: list[list[int]], cert: dict, name: str = 'Foo') -> st
                              if i not in cx.param_regs):
         raise TranslationError('bootstrap state is not a family member')
     x0 = [boot[r] for r in cx.param_regs]
-    if any(_feval(q, x0) < 0 for q in cx.P):
+    if any(_feval(q, x0) < 0 for q in cx.P) or not cx.admits(x0):
         raise TranslationError('bootstrap state is outside the invariant')
 
     em = _Emitter(F, W, cx.maxneed)
@@ -1285,7 +1344,10 @@ def _progress(cx):
 
     def go(k, rkey, ind):
         if k == N:
-            lines.append(f'{ind}exact res_{cx.rname(tuple(rkey))} {" ".join(mnames)} h')
+            if cx.admits(rkey):
+                lines.append(f'{ind}exact res_{cx.rname(tuple(rkey))} {" ".join(mnames)} h')
+            else:
+                lines.append(f'{ind}exfalso; omega')
             return
         M = cx.moduli[k]
         if M == 1:
@@ -1307,7 +1369,8 @@ def _progress(cx):
 def _assemble(F, W, name, cert, cx, em, parts):
     ns = name
     pn = cx.pnames
-    inv = ' ∧ '.join(_ineq(q, pn) for q in cx.P) or 'True'
+    rp = cx.residue_prop(pn)
+    inv = ' ∧ '.join([_ineq(q, pn) for q in cx.P] + ([f'({rp})'] if rp else [])) or 'True'
     fam = f'∃ {" ".join(pn)}, q = (⟨{cx.family(pn)}⟩ : Q) ∧ {cx.inv(pn)}'
     mods = ', '.join(f'{pn[k]} mod {cx.moduli[k]}' for k in range(cx.N) if cx.moduli[k] > 1)
     head = ['import BBfLean.FM',
@@ -1326,32 +1389,35 @@ def _assemble(F, W, name, cert, cx, em, parts):
             'This file was generated by `decider/nd_progress_to_lean.py` from the',
             'N-D progress certificate',
             '```',
-            cert_str(cert),
+            cert_str(cert) if cx.allowed is None else ndr_cert_str(cert),
             '```',
             f'with invariant family C({", ".join(pn)}) = ⟨{cx.family(pn)}⟩'
-            + (f', verified per residue class ({mods}).' if mods else '.'),
-            '-/',
-            '',
-            f'namespace {ns}',
-            '',
-            f'def Q := {" × ".join("ℕ" for _ in range(W))}',
-            f'def c₀ : Q := ⟨{", ".join("1" if i == 0 else "0" for i in range(W))}⟩',
-            'def fm : Q → Option Q := fun q ↦ match q with',
-            '  | ' + ('\n  | '.join(_fm_lines(F))),
-            '  | _ => none',
-            '',
-            '/-- The invariant region. -/',
-            f'abbrev Inv ({" ".join(p if any(q[k] for q in cx.P) else "_" + p for k, p in enumerate(pn))}'
-            f' : ℕ) : Prop := {inv}',
-            '',
-            '/-- The invariant set of states. -/',
-            f'abbrev Pr (q : Q) : Prop := ({fam}) ∨ ¬halts fm q' if cx.loops else
-            f'abbrev Pr (q : Q) : Prop := {fam}',
-            '',
-            'theorem sstar {c₁ c₂ c₃ : Q} (h₁ : fm c₁ = some c₂) (h₂ : c₂ [fm]⊢* c₃) :',
-            '    c₁ [fm]⊢* c₃ :=',
-            '  stepPlus_stepStar (step_stepStar_stepPlus h₁ h₂)',
-            '']
+            + (f', verified per residue class ({mods}).' if mods else '.')]
+    if rp:
+        head += [f'The invariant is restricted to the residues {rp}.']
+    head += [
+        '-/',
+        '',
+        f'namespace {ns}',
+        '',
+        f'def Q := {" × ".join("ℕ" for _ in range(W))}',
+        f'def c₀ : Q := ⟨{", ".join("1" if i == 0 else "0" for i in range(W))}⟩',
+        'def fm : Q → Option Q := fun q ↦ match q with',
+        '  | ' + ('\n  | '.join(_fm_lines(F))),
+        '  | _ => none',
+        '',
+        '/-- The invariant region. -/',
+        f'abbrev Inv ({" ".join(p if any(q[k] for q in cx.P) or (rp and cx.rmod[k] > 1) else "_" + p for k, p in enumerate(pn))}'
+        f' : ℕ) : Prop := {inv}',
+        '',
+        '/-- The invariant set of states. -/',
+        f'abbrev Pr (q : Q) : Prop := ({fam}) ∨ ¬halts fm q' if cx.loops else
+        f'abbrev Pr (q : Q) : Prop := {fam}',
+        '',
+        'theorem sstar {c₁ c₂ c₃ : Q} (h₁ : fm c₁ = some c₂) (h₂ : c₂ [fm]⊢* c₃) :',
+        '    c₁ [fm]⊢* c₃ :=',
+        '  stepPlus_stepStar (step_stepStar_stepPlus h₁ h₂)',
+        '']
     if cx.loops:
         head += ['theorem cycle_nonhalt {c : Q} (h : c [fm]⊢⁺ c) : ¬halts fm c :=',
                  '  progress_nonhalt_simple (A := Unit) (fun _ ↦ c) () (fun _ ↦ ⟨(), h⟩)',
