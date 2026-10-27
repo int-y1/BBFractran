@@ -24,16 +24,18 @@ List of deciders:
   * Warning: this decider hasn't been reviewed / reproduced by the bbchallenge community. Please open an issue if you find a bug.
 * 1D Progress Certificates (`oned_progress.py` + `oned_progress_to_lean.py`).
   * These 2 files were entirely written by AI (Opus 4.8).
-  * `sz23_8021.txt` and `sz24_85726.txt` are official, and all 1DPC certificates were verified in Lean 4.33.0-rc1.
+  * `sz23_8021.txt` and `sz24_85726.txt` are official, and all 1DPC certificates were verified in Lean 4.33.0-rc1 and 4.36.0-rc1.
   * Warning: The largest Lean files may use ~7 GB of memory to verify.
-  * Warning: Verifying the certificates in Lean is necessary. It is still possible for 1DPC to have a bug.
+  * Warning: Verifying the certificates in Lean is necessary. It is still possible for a 1DPC certificate to fail verification.
 * N-Dimensional Progress Certificates (`nd_progress.py` + `nd_progress_to_lean.py`).
   * These 2 files were entirely written by AI (Opus 4.8 and 5.5).
-  * `sz23_694.txt` and `sz24_10572.txt` are official, and all NDPC certificates were verified in Lean 4.33.0-rc1.
+  * `sz23_694.txt` and `sz24_10572.txt` are official, and all NDPC certificates were verified in Lean 4.33.0-rc1 and 4.36.0-rc1.
   * Warning: The largest Lean files may use ~11 GB of memory to verify.
-  * Warning: Verifying the certificates in Lean is necessary. It is still possible for NDPC to have a bug.
+  * Warning: Verifying the certificates in Lean is necessary. It is still possible for an NDPC certificate to fail verification.
 * N-Dimensional Residue Progress Certificates (`ndr_progress.py` + `nd_progress_to_lean.py`).
   * These 2 files were entirely written by AI (Opus 5.5). This decider is an extension of N-Dimensional Progress Certificates.
-  * TODO: Run NDRPC on `sz23_694.txt` and `sz24_10572.txt`. Verify the results in Lean.
+  * `sz23_159.txt` and `sz24_3580.txt` are official, and all NDRPC certificates were verified in Lean 4.36.0-rc1.
+  * Warning: The largest Lean files may use ~14 GB of memory to verify.
+  * Warning: Verifying the certificates in Lean is necessary. 3 sz24 machines need custom options (see `_MACHINE_OPTIONS`) to get verification to work.
 
 Historical note: `graph_search.py` implements the Power Limit decider, but this decider is very weak and not worth preserving. `graph_search2.py` is the old name of `graph_plm.py`. `graph_search3.py` is the old name of `graph_pdlm.py`.

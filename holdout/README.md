@@ -104,10 +104,11 @@ On Mar 25, 2026, the 140 holdouts were proved non-halting by prompting Claude Op
 * `sz23_21233.txt` (Jul 10, 2026): After simulating machines until halt. ([link](https://discord.com/channels/960643023006490684/1438019511155691521/1525198083363967136)) (First found by Opus 4.8. Thanks @Shawn Ligocki for strengthening the simulator and verifying the results.)
   * See `sz23_halted_6867.txt` for a list of machines that halted.
 * `sz23_8021.txt` (Jul 23, 2026): After applying the "1D Progress Certificates" decider.
-  * Oct 13, 2026: All 13212 1DPC certificates were verified in Lean 4.33.0-rc1 in ~32 core-hours. This holdouts list became official.
+  * Oct 13, 2026: All 13212 1DPC certificates were verified in Lean 4.33.0-rc1 in ~32 core-hours. This holdouts list became official. (Oct 27, 2026: All certificates were reverified in Lean 4.36.0-rc1.)
 * `sz23_703.txt` (Jul 25, 2026): After applying the "N-Dimensional Progress Certificates" decider with a time budget of 300s.
 * `sz23_694.txt` (Jul 25, 2026): After applying the "N-Dimensional Progress Certificates" decider with a time budget of 3600s.
-  * Oct 16, 2026: All 7327 NDPC certificates were verified in Lean 4.33.0-rc1 in ~30 core-hours. This holdouts list became official.
+  * Oct 16, 2026: All 7327 NDPC certificates were verified in Lean 4.33.0-rc1 in ~30 core-hours. This holdouts list became official. (Oct 27, 2026: All certificates were reverified in Lean 4.36.0-rc1.)
+* `sz23_159.txt` (Oct 27, 2026): After applying the "N-Dimensional Residue Progress Certificates" decider with a time budget of 3600s. 15 machines exceeded the time budget. All 535 NDRPC certificates were verified in Lean 4.36.0-rc1.
 * `sz23_13.txt` (Aug 4, 2026): After prompting Claude Opus 4.8 / 5 for Lean proofs of `sz23_694.txt`. See <https://github.com/int-y1/proofs/blob/master/BBfLean/Size23Summary.lean>. If all 13 holdouts are proved non-halting, BBf(23) would be solved.
 
 TODO: Find a machine in `sz23_790335.txt`, not in `sz23_halted_6867.txt`, and halts. I don't expect this to be possible. If this machine exists, this is either a breakthrough or a bug in my pipeline. (TODO: Try simulating each machine to 10^9 steps.)
@@ -122,7 +123,15 @@ TODO: Find a machine in `sz23_790335.txt`, not in `sz23_halted_6867.txt`, and ha
 * `sz24_231432.txt` (Sep 12, 2026): After applying @Shawn Ligocki's simulator further.
   * See `sz24_halted_66689_to_66701.txt` for the 12 machines that halted.
 * `sz24_85726.txt` (Sep 12, 2026): After applying the "1D Progress Certificates" decider.
-  * Oct 13, 2026: All 145706 certificates were verified in Lean 4.33.0-rc1 in ~314 core-hours. This holdouts list became official.
+  * Oct 13, 2026: All 145706 certificates were verified in Lean 4.33.0-rc1 in ~314 core-hours. This holdouts list became official. (Oct 27, 2026: All certificates were reverified in Lean 4.36.0-rc1.)
 * `sz24_10678.txt` (Oct 16, 2026): After applying the "N-Dimensional Progress Certificates" decider with a time budget of 300s.
 * `sz24_10572.txt` (Oct 16, 2026): After applying the "N-Dimensional Progress Certificates" decider with a time budget of 3600s. 15 machines exceeded the time budget.
-  * Oct 16, 2026: All 75154 NDPC certificates were verified in Lean 4.33.0-rc1 in ~270 core-hours. This holdouts list became official.
+  * Oct 16, 2026: All 75154 NDPC certificates were verified in Lean 4.33.0-rc1 in ~270 core-hours. This holdouts list became official. (Oct 27, 2026: All certificates were reverified in Lean 4.36.0-rc1.)
+* `sz24_3580.txt` (Oct 27, 2026): After applying the "N-Dimensional Residue Progress Certificates" decider with a time budget of 3600s. 213 machines exceeded the time budget. All 6992 NDRPC certificates were verified in Lean 4.36.0-rc1.
+
+The latest holdouts list is `sz24_3580.txt`. Helpful files for further investigation:
+
+* `sz24_2245_eqv_3580_unofficial.txt` (Oct 27, 2026): Programs in `sz24_3580.txt` grouped into 2245 equivalence classes. Each line is `<machine> <equivalence class>`. Machines in an equivalence class are either all halting or all non-halting. It is ok to treat this file as correct. This file is `unofficial` because there is no automatic way to reproduce this file.
+* `sz24_2002_hydra_unofficial.txt` (Oct 27, 2026): Hydra-like programs found in `sz24_3580.txt`. Warning: Do not treat this file as accurate. There could be false positives and false negatives.
+
+TODO: Simulate `[2/15, 1/6, 441/2, 11/3, 25/7, 6/11]` ([BMO](https://wiki.bbchallenge.org/wiki/Beaver_Math_Olympiad) #12) to halt. This machine should beat the current BBf(24) champion.

@@ -91,9 +91,10 @@ How the pieces are found and verified:
 Results (decided / total = rate;  flavour split add / mul / tmpl):
      sz21_140  :    95 /   140 = 67.9%   (76 / 17 / 2)
      sz22_2003 :  1325 /  2003 = 66.2%   (866 / 426 / 33)
-     sz23_21295: 13212 / 21295 = 62.0%   (7956 / 4781 / 475)
+     sz23_21233: 13212 / 21233 = 62.2%   (7956 / 4781 / 475)
+     sz24_231432: 145706 / 231432 = 63.0%   (79108 / 60433 / 6165)
 The sz21 and sz22 sets are proven non-halting (they have formal Lean proofs), so
-those are completeness rates; sz23_21295 is the open size-23 residual.
+those are completeness rates; sz23_21233 and sz24_231432 are open residuals.
 
 Soundness (a decider must NEVER call a halting machine non-halting).  0 of the 7497
 known-halting machines are decided (sz23_halted_6805 + sz22_halted_692), and every

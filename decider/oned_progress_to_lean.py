@@ -89,16 +89,17 @@ concrete simulation for several values of m before anything is printed.
 COVERAGE
 
 Checked against every machine `oned_progress` decides in `holdout/sz23_21233.txt`
-minus `holdout/sz23_8021_unofficial.txt` (13212: 7956 additive / 4781
-multiplicative / 475 template) and in `holdout/sz24_231432.txt` minus
-`holdout/sz24_85726_unofficial.txt` (145706: 79108 / 60433 / 6165).  Every
-certificate translates with the default arguments, and every one of the 158918
-Lean files compiles under default options: no errors, no `sorryAx`, only
+minus `holdout/sz23_8021.txt` (13212: 7956 additive / 4781 multiplicative / 475
+template) and in `holdout/sz24_231432.txt` minus `holdout/sz24_85726.txt`
+(145706: 79108 / 60433 / 6165).  Every certificate translates with the default
+arguments, and every one of the 158918 Lean files compiles under default options,
+in Lean 4.33.0-rc1 and again in 4.36.0-rc1: no errors, no `sorryAx`, only
 `[propext]` or `[propext, Quot.sound]`.
 
-With `lean -j1`, one file takes ~5s of CPU at the median (p99 50-63s, max 350s)
-and ~1.6 GiB peak RSS, ~1.5 GiB of which is the shared Mathlib import (max
-7.8 GiB); 32 CPU-hours for sz23 and 314 for sz24.  The tail is the bootstrap
+With `lean -j1` (Lean 4.33.0-rc1), one file takes ~5s of CPU at the median (p99
+50-63s, max 350s) and ~1.6 GiB peak RSS, ~1.5 GiB of which is the shared Mathlib
+import (max 7.8 GiB); 32 CPU-hours for sz23 and 314 for sz24.  Lean 4.36.0-rc1 is
+somewhat faster per file and uses less memory (max 6.9 GiB).  The tail is the bootstrap
 `c₀ [fm]⊢* f(w)`, which is a literal step-by-step run -- `max_boot` caps how
 long a one the translator will accept, at the price of rejecting the
 certificate.  It is uncapped by default: every anchor is already within

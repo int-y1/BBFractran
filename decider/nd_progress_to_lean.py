@@ -2,7 +2,7 @@
 import copy
 import itertools
 from fractions import Fraction
-from math import floor, gcd
+from math import ceil, floor, gcd
 
 from decider.nd_progress import (_compose as _subst, _simplify_region, cert_str,
                                  implies_ge0, nd_progress_cert)
@@ -68,8 +68,16 @@ set of residue vectors mod 'rmod' (each rmod_k divides moduli_k).  Then `Inv` al
 requires (x_0 mod rmod_0, ...) ∈ allowed, written as a disjunction of `x % M = r`
 conjunctions; only the residue classes whose reduction is allowed have trees, the
 others are closed in `progress` by `exfalso; omega`, and every leaf's end state
-must have a uniform, allowed residue (checked while planning, proved by `omega`).
-A certificate without 'allowed' (or with None) is translated exactly as before.
+must have a uniform, allowed residue (checked while planning).  `omega` is never
+asked about the disjunction itself, since it case-splits on it (with 40 allowed
+pairs mod 7×7, a single leaf exceeded the default heartbeats): each leaf drops it
+from its hypothesis `_h`; a leaf's end state is shown to satisfy `Inv` by
+`inv_mk`, with its polyhedral part proved by one `omega` and the matching
+disjunct selected explicitly (one `omega` per conjunct was seen to hit
+`maxRecDepth`); the bootstrap's `Inv`, over numerals, is proved conjunct by
+conjunct; and `progress` is split into one theorem `progress_r<r>` per residue of
+the first parameter with a modulus.  A certificate without 'allowed' (or with
+None) is translated exactly as before.
 
 --------------------------------------------------------------------------------
 ℕ COORDINATES
@@ -98,6 +106,26 @@ fails -- or when a higher-priority rule is blocked by a register that is bounded
 on the region but not a numeral -- the step is taken with a lemma `slN`, proved by
 case analysis on the offending registers (`rcases x with _ | _ | x`, then `rfl`),
 with the bounds as hypotheses discharged by `omega`.
+
+`_Region` reasons over the rationals, so a fact that holds on every integer point
+of a thin leaf region but not on its rational relaxation (n0 <= 0 on
+{-5*n0 + 8*n1 + 1 >= 0, n1 <= 0}, whose vertex is (1/5, 0)) is invisible to the
+planner.  When a leaf fails to plan, it is planned once more on its region
+tightened by integer cuts (d.n <= floor(max d.n) for the unit vectors and facet
+normals d, and the same from below); they become hypotheses of the run, proved by
+`omega`.  Leaves that plan without the cuts are translated exactly as before.
+
+Two opt-in options work around limits of `omega`.  They are off by default, so
+existing translations do not change, except for the machines listed in
+`_MACHINE_OPTIONS`, which get them automatically (3 machines of sz24 need one):
+  * `enumerate_empty`: a case-analysis branch whose region has rational but no
+    integer points is closed by enumerating bounded parameters, not by a bare
+    `omega`, which lacks the dark/grey shadows and can fail there.
+  * `lattice_hints`: on a leaf whose region is a line (its integer points
+    c + u*v), a lemma `lat_…` proves the parametrization once, substituting the
+    equalities with a unit coefficient first, and the leaf and its run then work
+    with the unit equalities n_k = c_k + v_k*u.  Without it every `omega` of such a
+    leaf re-solves the region's non-unit equalities (seconds each).
 
 Every plan is replayed against a concrete simulation at integer points of each
 leaf before anything is printed.
@@ -690,7 +718,7 @@ class _Emitter:
 class _Leaf:
     """Plans and emits the proof of one leaf of one residue class."""
 
-    def __init__(self, cx, rkey, idx, mcons, splits, node):
+    def __init__(self, cx, rkey, idx, mcons, splits, node, tight=False):
         self.cx, self.rkey, self.idx = cx, rkey, idx
         self.splits = splits            # [(g, 'lt' | 'ge', the constraint >= 0)]
         self.node = node
@@ -713,6 +741,42 @@ class _Leaf:
         self.names = [f'{_VAR}{k}' for k in range(N)]
         if self.R.empty():              # no lattice point: m_k >= lo_k cuts it away
             self.lo = None
+        elif tight:
+            self._tighten()
+
+    def _tighten(self):
+        """Add the integer cuts d.n <= floor(max d.n) and d.n >= ceil(min d.n)
+        wherever the rational bound is fractional, for d the unit vectors and the
+        facet normals of the region.  `R.ge0` reasons over the rationals, so
+        without them a fact that holds on every integer point of a thin region
+        (e.g. n0 <= 0 on {-5*n0 + 8*n1 + 1 >= 0, n1 <= 0}, whose rational vertex
+        is (1/5, 0)) cannot be used.  The cuts lose no integer point; they become
+        hypotheses of the leaf's run, discharged by `omega`."""
+        N = self.cx.N
+        for _ in range(4):
+            cons = [list(c) for c in self.R.cons]
+            dirs = [[1 if j == k else 0 for j in range(N)] for k in range(N)]
+            dirs += [list(c[:N]) for c in self.R.cons if any(c[:N])]
+            for d in dirs:
+                vals = [sum(a * x for a, x in zip(d, v)) for v in self.R.verts]
+                vmax, vmin = max(vals), min(vals)
+                if vmax.denominator != 1 and self.R.ge0([-x for x in d] + [ceil(vmax)]):
+                    cut = [-x for x in d] + [floor(vmax)]
+                    if cut not in cons:
+                        cons.append(cut)
+                if vmin.denominator != 1 and self.R.ge0(d + [-floor(vmin)]):
+                    cut = d + [-ceil(vmin)]
+                    if cut not in cons:
+                        cons.append(cut)
+            if len(cons) == len(self.R.cons):
+                return
+            cons = _simplify_region(cons + [[1 if j == k else 0 for j in range(N)] + [0]
+                                            for k in range(N)], N)
+            self.ncons = [c for c in cons if not _trivial(c)]
+            self.R = _Region(N, self.ncons)
+            if self.R.empty():
+                self.lo = None
+                return
 
     @property
     def name(self):
@@ -744,6 +808,7 @@ class _Leaf:
                         raise _Planning('end state residue is not uniform')
                 if not cx.admits([f[-1] for f in xprime]):
                     raise _Planning('end state outside the residue restriction')
+                self.end_res = [f[-1] for f in xprime]
         if not any(isinstance(op, _Step) for op in ops):
             ops = _expand(F, W, N, ops, 1)
         planned = []
@@ -854,6 +919,76 @@ class _Leaf:
 
     def hyps(self):
         return [f'(_h{k} : {_ineq(c, self.names)})' for k, c in enumerate(self.ncons)]
+
+    def lattice(self):
+        """(c, v, j, umax, eqs) with the integer points of the region exactly
+        c + u*v, 0 <= u <= umax (umax None: unbounded), when the region spans a line
+        (N - 1 independent implicit equalities, `eqs`); j is a coordinate with
+        v_j != 0 to read u off.  None otherwise.  Used by `lattice_hints` (see
+        `_emit_leaf`)."""
+        N, R = self.cx.N, self.R
+        if N < 2 or self.loop is not None:
+            return None
+        eqs = [c for c in R.all if R.ge0([-x for x in c])]
+        rows = [c[:N] for c in eqs]
+        if N == 2:
+            ind = [r for r in rows if any(r)][:1]
+            if not ind:
+                return None
+            a = ind[0]
+            v = [a[1], -a[0]]
+        elif N == 3:
+            v = None
+            for r1, r2 in itertools.combinations(rows, 2):
+                w = [r1[1] * r2[2] - r1[2] * r2[1], r1[2] * r2[0] - r1[0] * r2[2],
+                     r1[0] * r2[1] - r1[1] * r2[0]]
+                if any(w):
+                    v = w
+                    break
+            if v is None:
+                return None
+        else:
+            return None
+        if any(sum(a * b for a, b in zip(r, v)) for r in rows):
+            return None                 # rank of the equalities is not N - 1
+        g = 0
+        for x in v:
+            g = gcd(g, abs(x))
+        v = [x // g for x in v]
+        # an integer point of the line through a vertex q: consecutive ones differ
+        # by v, so |v_j| consecutive values of coordinate j suffice
+        q = R.verts[0]
+        j = min((k for k in range(N) if v[k]), key=lambda k: abs(v[k]))
+        p = None
+        for m in range(ceil(q[j]), ceil(q[j]) + abs(v[j])):
+            sc = Fraction(m - q[j], v[j])
+            cand = [q[k] + sc * v[k] for k in range(N)]
+            if all(x.denominator == 1 for x in cand):
+                p = [int(x) for x in cand]
+                break
+        if p is None:
+            return None
+        lo, hi = None, None              # t-range of p + t*v inside the region
+        for c in R.all:
+            cv = sum(a * b for a, b in zip(c[:N], v))
+            cp = sum(a * b for a, b in zip(c[:N], p)) + c[N]
+            if cv > 0:
+                b = ceil(Fraction(-cp, cv))
+                lo = b if lo is None else max(lo, b)
+            elif cv < 0:
+                b = floor(Fraction(cp, -cv))
+                hi = b if hi is None else min(hi, b)
+            elif cp < 0:
+                return None
+        if lo is None and hi is None:
+            return None
+        if lo is None:                   # orient t towards the bounded end
+            v, lo, hi = [-x for x in v], -hi, None
+        c0 = [p[k] + lo * v[k] for k in range(N)]
+        if any(x < 0 for x in c0) or (hi is not None and hi < lo):
+            return None
+        j = min((k for k in range(N) if v[k]), key=lambda k: abs(v[k]))
+        return c0, v, j, (None if hi is None else hi - lo), eqs
 
     def blocks(self, em):
         """[src, dst, proof, is_plus] per block; proofs of step blocks are
@@ -974,8 +1109,15 @@ class _Context:
         return self.allowed is None or \
             tuple(x[k] % self.rmod[k] for k in range(self.N)) in self.allowed
 
-    def residue_prop(self, names):
-        """The residue restriction as a Lean proposition, or None if it is vacuous."""
+    def residue_parts(self):
+        """(ks, proj): the coordinates the residue restriction depends on, and the
+        allowed residue vectors on them, in the order of `residue_prop`'s
+        disjuncts; None if the restriction is vacuous."""
+        if not hasattr(self, '_rparts'):
+            self._rparts = self._residue_parts()
+        return self._rparts
+
+    def _residue_parts(self):
         if self.allowed is None:
             return None
         allowed = set(self.allowed)
@@ -994,11 +1136,32 @@ class _Context:
             total *= self.rmod[k]
         if len(proj) == total:
             return None
+        return ks, proj
+
+    def residue_prop(self, names):
+        """The residue restriction as a Lean proposition, or None if it is vacuous."""
+        parts = self.residue_parts()
+        if parts is None:
+            return None
+        ks, proj = parts
         conj = [' ∧ '.join(f'{names[k]} % {self.rmod[k]} = {a[j]}' for j, k in enumerate(ks))
                 for a in proj]
         if len(conj) == 1:
             return conj[0]
         return ' ∨ '.join(f'({c})' if len(ks) > 1 else c for c in conj)
+
+    def residue_proof(self, res):
+        """A proof term of `residue_prop` for parameters with residues `res` (mod
+        `rmod`): the matching disjunct is selected explicitly, so `omega` only sees
+        the single facts `x % M = r`, never the disjunction."""
+        ks, proj = self.residue_parts()
+        i = proj.index(tuple(res[k] % self.rmod[k] for k in ks))
+        t = '(by omega)' if len(ks) == 1 else f'⟨{", ".join(["(by omega)"] * len(ks))}⟩'
+        if i < len(proj) - 1:
+            t = f'(Or.inl {t})'
+        for _ in range(i):
+            t = f'(Or.inr {t})'
+        return t
 
     def const(self, i):
         """The value of the non-parameter register i in the family."""
@@ -1093,6 +1256,7 @@ def _residue_parts(cx, em, rkey, tree):
         leaves = []
         _leaves(tree, [], leaves)
         plan, refined = {}, False
+        regions = {id(node): root + [s[2] for s in splits] for node, splits in leaves}
         for idx, (node, splits) in enumerate(leaves):
             if node['kind'] == 'empty':
                 plan[id(node)] = None
@@ -1102,7 +1266,21 @@ def _residue_parts(cx, em, rkey, tree):
                 plan[id(node)] = None
                 continue
             try:
-                lf.plan()
+                try:
+                    lf.plan()
+                except _Planning:
+                    # rational reasoning on the region was not enough: retry once on
+                    # the region tightened by integer cuts (only then, so that leaves
+                    # that already plan are translated exactly as before)
+                    lf2 = _Leaf(cx, rkey, idx, root + [s[2] for s in splits], splits, node,
+                                tight=True)
+                    if lf2.lo is not None and lf2.ncons == lf.ncons:
+                        raise
+                    lf = lf2
+                    if lf.lo is None:       # no integer point at all
+                        plan[id(node)] = None
+                        continue
+                    lf.plan()
             except _Refine as r:
                 _refine(node, lf, r.form)
                 refined = True
@@ -1127,7 +1305,11 @@ def _residue_parts(cx, em, rkey, tree):
     def walk(node, depth, ind, hyps):
         kind = node['kind']
         if kind == 'empty' or (kind == 'leaf' and plan[id(node)] is None):
-            lines.append(f'{ind}exfalso; omega')
+            if cx.enumerate_empty:
+                lines.append(f'{ind}exfalso')
+                lines.extend(_enumerate_empty(N, regions[id(node)], mnames, ind))
+            else:
+                lines.append(f'{ind}exfalso; omega')
             return
         if kind == 'leaf':
             args = ' '.join(mnames + ['h'] + hyps)
@@ -1146,6 +1328,52 @@ def _residue_parts(cx, em, rkey, tree):
     return parts
 
 
+_ENUM_MAX = 16
+
+
+def _enumerate_empty(N, cons, names, ind, fixed=None):
+    """Tactic lines closing `False` on a region with no integer point.
+
+    `omega` refutes a region with no rational point, and one with a single free
+    variable, but it does not implement the dark/grey shadows, so it can fail on
+    a region that has rational points and no integer point (e.g. 0 <= a <= 1,
+    2a - 3b <= -2, 4a - 3b >= 0).  So bounded variables are enumerated over their
+    rational range rounded outward, smallest range first, until the region is
+    rationally empty or one variable is left; both are exact for `omega`."""
+    fixed = dict(fixed or {})
+    free = [k for k in range(N) if k not in fixed]
+
+    def sub(c):                 # substitute the fixed values, over the free variables
+        return [c[k] for k in free] + [c[N] + sum(c[k] * v for k, v in fixed.items())]
+    sc = [sub(c) for c in cons]
+    if len(free) <= 1 or any(not any(c[:-1]) and c[-1] < 0 for c in sc):
+        return [f'{ind}omega']
+    R = _Region(len(free), [c for c in sc if any(c[:-1])])
+    if R.empty():
+        return [f'{ind}omega']
+    best = None
+    for j, k in enumerate(free):
+        hi = max(v[j] for v in R.verts)
+        if not R.ge0([-1 if i == j else 0 for i in range(len(free))] + [ceil(hi)]):
+            continue            # unbounded above
+        # rounded outward: `omega` proves the disjunction from the rational
+        # bounds alone (the inward-rounded range would need integer reasoning)
+        lo = max(0, floor(min(v[j] for v in R.verts)))
+        vals = list(range(lo, ceil(hi) + 1))
+        if best is None or len(vals) < len(best[1]):
+            best = (k, vals)
+    if best is None or len(best[1]) > _ENUM_MAX:
+        return [f'{ind}omega']
+    k, vals = best
+    out = [f'{ind}rcases (by omega : ' + ' ∨ '.join(f'{names[k]} = {v}' for v in vals)
+           + ') with ' + ' | '.join(['rfl'] * len(vals))]
+    for v in vals:
+        body = _enumerate_empty(N, cons, names, ind + '  ', {**fixed, k: v})
+        body[0] = ind + '· ' + body[0][len(ind) + 2:]
+        out += body
+    return out
+
+
 def _emit_leaf(cx, em, lf, mnames):
     """The run theorem(s) and the leaf theorem of one leaf."""
     N, W = cx.N, cx.W
@@ -1159,8 +1387,28 @@ def _emit_leaf(cx, em, lf, mnames):
     plus = next(k for k, b in enumerate(blocks) if callable(b[2]))
     blocks[plus][3] = True
     parts = []
-    binders = ' '.join(names)
-    hyp_s = (' ' + ' '.join(hyps)) if hyps else ''
+    # `lattice_hints`: on a region whose integer points are c + u*v, the run gets u
+    # and the equalities n_k = c_k + v_k*u as hypotheses (`_eK`), so that `omega`
+    # eliminates the n_k exactly instead of re-solving the region's equalities
+    # The region then needs no other hypothesis: the run gets the equalities (and
+    # u <= umax) instead of the region's inequalities.
+    lat = lf.lattice() if cx.lattice_hints else None
+    lat_hyps, lat_names = [], []
+    if lat is not None:
+        c0, v, _, umax, _ = lat
+        for k in range(N):
+            if v[k] >= 0:
+                rhs = _nat([v[k]], c0[k], ['u'])
+            else:
+                rhs = f'{c0[k]} - {_nat([-v[k]], 0, ["u"])}'
+            lat_hyps.append(f'(_e{k} : {names[k]} = {rhs})')
+            lat_names.append(f'_e{k}')
+        if umax is not None:
+            lat_hyps.append(f'(_eu : u ≤ {umax})')
+            lat_names.append('_eu')
+    binders = ' '.join(names + (['u'] if lat else []))
+    hyps_all = lat_hyps if lat else hyps
+    hyp_s = (' ' + ' '.join(hyps_all)) if hyps_all else ''
 
 
     def chain(seg, p, ind='  '):
@@ -1191,7 +1439,7 @@ def _emit_leaf(cx, em, lf, mnames):
         parts.append('\n'.join(head + chain(blocks, plus)) + '\n')
     else:
         segs = []
-        hargs = ' '.join(f'_h{k}' for k in range(len(hyps)))
+        hargs = ' '.join(lat_names if lat else [f'_h{k}' for k in range(len(hyps))])
         for g, a in enumerate(range(0, len(blocks), _SEG)):
             seg = blocks[a:a + _SEG]
             p = plus - a if a <= plus < a + _SEG else None
@@ -1213,20 +1461,88 @@ def _emit_leaf(cx, em, lf, mnames):
     lines = [f'theorem leaf_{rn} ({" ".join(bnames)} : ℕ) (_h : {cx.inv(xt)})'
              + ''.join(' ' + r for r in rel_hyps) + ' :',
              f'    ∃ c\', Pr c\' ∧ (⟨{cx.family(xt)}⟩ : Q) [fm]⊢⁺ c\' := by']
+    # with a residue restriction, keep only the polyhedral part of `Inv`: the
+    # disjunction is not needed here, and every `omega` would case-split on it
+    restricted = cx.residue_parts() is not None
+    if restricted:
+        lines.append(f'  obtain ⟨{", ".join(f"_h{k}" for k in range(len(cx.P)))}, -⟩ := _h'
+                     if cx.P else '  clear _h')
+    if lat is not None:
+        # The region's equalities have non-unit coefficients, and an `omega` that sees
+        # them over all the variables takes seconds.  So the parametrization
+        # m_k = C_k + v_k*u is proved in a lemma `lat_…`, which first substitutes the
+        # equalities that solve for one variable with a unit coefficient; after the
+        # call every later `omega` of the leaf has a unit equality for each m_k.
+        c0, v, j, umax, eqs = lat
+        C = [c0[k] + lf.lo[k] for k in range(N)]
+
+        def mexpr(k):
+            if v[k] >= 0:
+                return _nat([v[k]], C[k], ['u'])
+            return f'{C[k]} - {_nat([-v[k]], 0, ["u"])}'
+        # unit pivots: m_k = (non-negative combination of the others) + b
+        meqs = [list(e[:N]) + [e[N] - sum(e[i] * lf.lo[i] for i in range(N))] for e in eqs]
+        subs, done = [], set()
+        for e in meqs:
+            for k in range(N):
+                if k in done or abs(e[k]) != 1 or k == j:
+                    continue
+                f = [x * -e[k] for x in e]          # m_k = sum f_i m_i + f_N (i != k)
+                f[k] = 0
+                if any(f[i] and i in done for i in range(N)):
+                    continue
+                if all(x >= 0 for x in f):
+                    subs.append((k, _nat(f[:N], f[N], bnames)))
+                    done.add(k)
+                    break
+        lhyps = [f'(_h : {cx.inv(xt)})'] + rel_hyps
+        concl = ' ∧ '.join([f'{bnames[k]} = {mexpr(k)}' for k in range(N)]
+                           + ([f'u ≤ {umax}'] if umax is not None else []))
+        diff = (f'{bnames[j]} - {C[j]}' if v[j] > 0 else f'{C[j]} - {bnames[j]}') \
+            if C[j] else bnames[j]
+        wit = diff if abs(v[j]) == 1 else f'({diff}) / {abs(v[j])}'
+        body = [f'theorem lat_{rn} ({" ".join(bnames)} : ℕ) ' + ' '.join(lhyps) + ' :',
+                f'    ∃ u, {concl} := by']
+        if restricted:
+            body.append(f'  obtain ⟨{", ".join(f"_h{k}" for k in range(len(cx.P)))}, -⟩ := _h'
+                        if cx.P else '  clear _h')
+        for t, (k, ex) in enumerate(subs):
+            body.append(f'  have _q{t} : {bnames[k]} = {ex} := by omega')
+            body.append(f'  subst _q{t}')
+        nconj = N + (umax is not None)
+        body.append(f'  exact ⟨{wit}, {", ".join(["by omega"] * nconj)}⟩')
+        parts.append('\n'.join(body) + '\n')
+        fnames = [f'_f{k}' for k in range(N)] + (['_eu'] if umax is not None else [])
+        call = ' '.join(bnames + ['_h'] + [f'_s{d}' for d in range(len(lf.splits))])
+        lines.insert(2, f'  obtain ⟨u, {", ".join(fnames)}⟩ := lat_{rn} {call}')
     vnames = list(names)
-    for k in range(N):
-        if lf.lo[k]:
-            lines.append(f'  obtain ⟨{names[k]}, rfl⟩ : ∃ n, {mnames[k]} = n + {lf.lo[k]} := '
-                         f'⟨{mnames[k]} - {lf.lo[k]}, by omega⟩')
+    if lat is None:
+        for k in range(N):
+            if lf.lo[k]:
+                lines.append(f'  obtain ⟨{names[k]}, rfl⟩ : ∃ n, {mnames[k]} = n + {lf.lo[k]} := '
+                             f'⟨{mnames[k]} - {lf.lo[k]}, by omega⟩')
+    else:
+        # substitute m_k := C_k + v_k*u (an `omega` that only has the equalities as
+        # hypotheses stays slow), then name n_k = c_k + v_k*u for the run
+        lines += [f'  subst _f{k}' for k in range(N)]
+        for k in range(N):
+            h = lat_hyps[k]
+            lines.append(f'  obtain ⟨{names[k]}, _e{k}⟩ : ∃ n, n = {h[h.index("=") + 2:-1]} '
+                         f':= ⟨_, rfl⟩')
     goal = [_nat([cx.moduli[k] if j == k else 0 for j in range(N)], lf.rkey[k],
                  [f'({vnames[j]} + {lf.lo[j]})' if lf.lo[j] else vnames[j]
                   for j in range(N)]) for k in range(N)]
     goal_state = [str(cx.const(i)) for i in range(W)]
     for k in range(N):
         goal_state[cx.param_regs[k]] = goal[k]
-    args = vnames + ['_'] * (2 * W) + ['(by omega)'] * len(hyps)
+    args = vnames + (['u'] if lat else []) + ['_'] * (2 * W) \
+        + (lat_names if lat else ['(by omega)'] * len(hyps))
     start_p = lf.poly(lf.segs[0][2], lf.start)
-    args += [_eq_proof(goal_state[i], start_r[i], lf.start[i], start_p[i]) for i in range(W)]
+    if lat is None:
+        args += [_eq_proof(goal_state[i], start_r[i], lf.start[i], start_p[i])
+                 for i in range(W)]
+    else:                           # the leaf's state is over u, the run's over n
+        args += ['rfl' if goal_state[i] == start_r[i] else '(by omega)' for i in range(W)]
     if lf.loop is None:
         xprime = [end_r[r] for r in cx.param_regs]
         end_p = lf.poly(last[2], last[1][-1])
@@ -1235,7 +1551,15 @@ def _emit_leaf(cx, em, lf, mnames):
             tgt[r] = xprime[k]
         args += [_eq_proof(tgt[i], end_r[i], end_p[i] if i in cx.param_regs
                            else _fconst(cx.const(i), N), end_p[i]) for i in range(W)]
-        mem = f'⟨{", ".join(_paren(x) for x in xprime)}, rfl, by omega⟩'
+        if restricted:
+            # the polyhedral part by one `omega`, the residue disjunct selected
+            # explicitly (`inv_mk`); `omega` on the whole `Inv` case-splits on the
+            # disjunction, and one `omega` per conjunct can hit `maxRecDepth`
+            res = cx.residue_proof(lf.end_res)
+            mem = (f'⟨{", ".join(_paren(x) for x in xprime)}, rfl, '
+                   + (f'inv_mk (by omega) {res}⟩' if cx.P else f'{res}⟩'))
+        else:
+            mem = f'⟨{", ".join(_paren(x) for x in xprime)}, rfl, by omega⟩'
         lines.append(f'  exact ⟨_, {"Or.inl " if cx.loops else ""}{mem},')
         lines.append(f'    run_{rn} {" ".join(args)}⟩')
     else:
@@ -1268,11 +1592,37 @@ def _emit_loop(em, lf, hyps):
 # top level
 # ============================================================================
 
-def nd_progress_to_lean(F: list[list[int]], cert: dict, name: str = 'Foo') -> str:
+# Machines whose certificates verify under default options only with an opt-in
+# option (found on holdout/sz24_10572.txt, NDRPC with time_budget=3600; the line
+# number in that list is given).  `nd_progress_to_lean` applies these unless the
+# option is passed explicitly, so that the sz24 files are reproduced by a plain call.
+_MACHINE_OPTIONS = {
+    '[27/10, 44/21, 91/2, 5/121, 15/13]': {'lattice_hints': True},     # line 3628
+    '[9/10, 88/21, 91/2, 5/11, 75/13]': {'lattice_hints': True},       # line 9580
+    '[9/10, 22/21, 343/2, 175/121, 3/7]': {'enumerate_empty': True},   # line 9199
+}
+
+
+def nd_progress_to_lean(F: list[list[int]], cert: dict, name: str = 'Foo',
+                        max_heartbeats: int | None = None,
+                        enumerate_empty: bool | None = None,
+                        lattice_hints: bool | None = None) -> str:
     """Translate an `nd_progress_cert` certificate for `F` into a Lean 4 file.
 
     `name` is used both as the module name and as the namespace, so the result
-    belongs in `<name>.lean`.  Raises `TranslationError` on failure."""
+    belongs in `<name>.lean`.  `max_heartbeats`, if given, raises Lean's
+    per-declaration limit with a `set_option` in the file (for the rare file
+    whose declarations do not fit the default 200000).  `enumerate_empty`
+    closes the case-analysis branches without integer points by enumerating
+    bounded parameters instead of a bare `omega` (see `_enumerate_empty`).
+    `lattice_hints` hands each run on a 1-dimensional lattice region its
+    parametrization (see `_Leaf.lattice`).  Both are off unless given, or unless
+    `_MACHINE_OPTIONS` lists them for F.  Raises `TranslationError` on failure."""
+    known = _MACHINE_OPTIONS.get(unparse_line(F), {})
+    if enumerate_empty is None:
+        enumerate_empty = known.get('enumerate_empty', False)
+    if lattice_hints is None:
+        lattice_hints = known.get('lattice_hints', False)
     if cert is None:
         raise TranslationError('no certificate')
     if 'trees' not in cert or cert['trees'] is None:
@@ -1282,6 +1632,8 @@ def nd_progress_to_lean(F: list[list[int]], cert: dict, name: str = 'Foo') -> st
     if not 1 <= W <= 26:
         raise TranslationError('unsupported register count')
     cx = _Context(F, cert)
+    cx.enumerate_empty = enumerate_empty
+    cx.lattice_hints = lattice_hints
     keys = [k for k in itertools.product(*[range(M) for M in cx.moduli]) if cx.admits(k)]
     if sorted(cert['trees']) != keys:
         raise TranslationError('certificate does not cover every residue class')
@@ -1321,10 +1673,19 @@ def nd_progress_to_lean(F: list[list[int]], cert: dict, name: str = 'Foo') -> st
     else:
         lines += [f'    · rintro c ⟨{", ".join(pnames)}, rfl, h⟩',
                   f'      exact progress {" ".join(pnames)} h']
-    lines.append(f'    · exact ⟨{", ".join(map(str, x0))}, rfl, by omega⟩' if not cx.loops
-                 else f'    · exact Or.inl ⟨{", ".join(map(str, x0))}, rfl, by omega⟩')
+    if cx.residue_parts() is not None:     # as in the leaves: no `omega` on the disjunction
+        boot_mem = (f'⟨{", ".join(map(str, x0))}, rfl, ' + ''.join('(by omega), ' for _ in cx.P)
+                    + f'{cx.residue_proof(x0)}⟩')
+    else:
+        boot_mem = f'⟨{", ".join(map(str, x0))}, rfl, by omega⟩'
+    lines.append(f'    · exact {boot_mem}' if not cx.loops else f'    · exact Or.inl {boot_mem}')
     parts.append('\n'.join(lines + blines))
-    return _assemble(F, W, name, cert, cx, em, parts)
+    out = _assemble(F, W, name, cert, cx, em, parts)
+    if max_heartbeats is not None:
+        imports = 'import BBfLean.FM\nimport Mathlib.Tactic.Ring\n'
+        assert out.startswith(imports)
+        out = imports + f'\nset_option maxHeartbeats {int(max_heartbeats)}\n' + out[len(imports):]
+    return out
 
 
 def _has_loop(node):
@@ -1362,8 +1723,34 @@ def _progress(cx):
             go(k + 1, rkey + [r], ind + '  ')
             lines[mark] = ind + '· ' + lines[mark][len(ind) + 2:]
 
-    go(0, [], '  ')
-    return '\n'.join(lines) + '\n'
+    ks = [k for k in range(N) if cx.moduli[k] > 1]
+    if cx.residue_parts() is None or not ks:
+        go(0, [], '  ')
+        return '\n'.join(lines) + '\n'
+
+    # with a residue restriction every `omega` here sees the disjunction, and the
+    # whole case analysis can exceed one declaration's heartbeats: split it on the
+    # first parameter with a modulus, one theorem `progress_r<r>` per residue
+    k0 = ks[0]
+    M = cx.moduli[k0]
+    out = []
+    binders = [mnames[k0] if k == k0 else pn[k] for k in range(N)]
+    for r in range(M):
+        args = list(pn)
+        args[k0] = _nat([M if j == k0 else 0 for j in range(N)], r, binders)
+        sub = [f'theorem progress_r{r} ({" ".join(binders)} : ℕ) (h : {cx.inv(args)}) :',
+               f'    ∃ c\', Pr c\' ∧ (⟨{cx.family(args)}⟩ : Q) [fm]⊢⁺ c\' := by']
+        lines, keep = sub, lines
+        go(k0 + 1, [0] * k0 + [r], '  ')
+        out.append('\n'.join(lines) + '\n')
+        lines = keep
+    lines.append(f'  obtain ⟨{mnames[k0]}, r{k0}, hr{k0}, rfl⟩ : ∃ m r, r < {M} ∧ '
+                 f'{pn[k0]} = {M}*m + r := ⟨{pn[k0]} / {M}, {pn[k0]} % {M}, by omega, by omega⟩')
+    lines.append(f'  rcases (by omega : ' + ' ∨ '.join(f'r{k0} = {r}' for r in range(M))
+                 + ') with ' + ' | '.join(['rfl'] * M))
+    for r in range(M):
+        lines.append(f'  · exact progress_r{r} {" ".join(binders)} h')
+    return '\n'.join(out + lines) + '\n'
 
 
 def _assemble(F, W, name, cert, cx, em, parts):
@@ -1413,7 +1800,17 @@ def _assemble(F, W, name, cert, cx, em, parts):
         '/-- The invariant set of states. -/',
         f'abbrev Pr (q : Q) : Prop := ({fam}) ∨ ¬halts fm q' if cx.loops else
         f'abbrev Pr (q : Q) : Prop := {fam}',
-        '',
+        '']
+    if rp and cx.P:
+        k = len(cx.P)
+        proj = [f'hp{".2" * j}.1' for j in range(k - 1)] + [f'hp{".2" * (k - 1)}']
+        head += [
+            '/-- `Inv` from its polyhedral part and its residue part. -/',
+            f'theorem inv_mk {{{" ".join(pn)} : ℕ}} (hp : {" ∧ ".join(_ineq(q, pn) for q in cx.P)})',
+            f'    (hr : {rp}) : Inv {" ".join(pn)} :=',
+            f'  ⟨{", ".join(proj)}, hr⟩',
+            '']
+    head += [
         'theorem sstar {c₁ c₂ c₃ : Q} (h₁ : fm c₁ = some c₂) (h₂ : c₂ [fm]⊢* c₃) :',
         '    c₁ [fm]⊢* c₃ :=',
         '  stepPlus_stepStar (step_stepStar_stepPlus h₁ h₂)',
