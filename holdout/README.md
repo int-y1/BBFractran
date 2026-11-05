@@ -24,6 +24,7 @@ TODO:
   * `sz23_694_unofficial.txt` was renamed to `sz23_694.txt`.
   * `sz23_13_unofficial.txt` was renamed to `sz23_13.txt`.
   * `sz24_10838_unofficial.txt` was removed. This holdouts list was technically correct, but not reproducible. (More precisely, all solved machines can get a Lean proof, but heavy changes to `nd_progress*.py` were needed to generate the proofs.)
+* Nov 6, 2026: `sz24_2245_eqv_3580_unofficial.txt` was replaced by `sz24_1096_eqv_2117_unofficial.txt`.
 
 ## Size 17
 
@@ -128,10 +129,13 @@ TODO: Find a machine in `sz23_790335.txt`, not in `sz23_halted_6867.txt`, and ha
 * `sz24_10572.txt` (Oct 16, 2026): After applying the "N-Dimensional Progress Certificates" decider with a time budget of 3600s. 15 machines exceeded the time budget.
   * Oct 16, 2026: All 75154 NDPC certificates were verified in Lean 4.33.0-rc1 in ~270 core-hours. This holdouts list became official. (Oct 27, 2026: All certificates were reverified in Lean 4.36.0-rc1.)
 * `sz24_3580.txt` (Oct 27, 2026): After applying the "N-Dimensional Residue Progress Certificates" decider with a time budget of 3600s. 213 machines exceeded the time budget. All 6992 NDRPC certificates were verified in Lean 4.36.0-rc1.
+* `sz24_2117.txt` (Nov 6, 2026): After applying "Size 24 Progress Certificates". All 1463 certificates were verified in Lean 4.36.0-rc1.
 
-The latest holdouts list is `sz24_3580.txt`. Helpful files for further investigation:
+The latest holdouts list is `sz24_2117.txt`. Helpful files for further investigation:
 
-* `sz24_2245_eqv_3580_unofficial.txt` (Oct 27, 2026): Programs in `sz24_3580.txt` grouped into 2245 equivalence classes. Each line is `<machine> <equivalence class>`. Machines in an equivalence class are either all halting or all non-halting. It is ok to treat this file as correct. This file is `unofficial` because there is no automatic way to reproduce this file.
+* `sz24_1096_eqv_2117_unofficial.txt` (Nov 6, 2026): Programs in `sz24_2117.txt` grouped into 1096 equivalence classes. Each line is `<machine> <equivalence class>`. Machines in an equivalence class are either all halting or all non-halting. It is ok to treat this file as correct. This file is `unofficial` because there is no automatic way to reproduce this file.
 * `sz24_2002_hydra_unofficial.txt` (Oct 27, 2026): Hydra-like programs found in `sz24_3580.txt`. Warning: Do not treat this file as accurate. There could be false positives and false negatives.
 
 TODO: Simulate `[2/15, 1/6, 441/2, 11/3, 25/7, 6/11]` ([BMO](https://wiki.bbchallenge.org/wiki/Beaver_Math_Olympiad) #12) to halt. This machine should beat the current BBf(24) champion.
+
+TODO: Investigate `[14/15, 1/66, 9/2, 121/3, 5/7, 10/11]` more. AI says this this holdout probviously halts or has a hard-to-find invariant.

@@ -37,5 +37,10 @@ List of deciders:
   * `sz23_159.txt` and `sz24_3580.txt` are official, and all NDRPC certificates were verified in Lean 4.36.0-rc1.
   * Warning: The largest Lean files may use ~14 GB of memory to verify.
   * Warning: Verifying the certificates in Lean is necessary. 3 sz24 machines need custom options (see `_MACHINE_OPTIONS`) to get verification to work.
+* Size 24 Progress Certificates (`sz24_progress.py` + all previous progress certificates).
+  * This file was entirely written by AI (Opus 5.5).
+  * This is not a decider. The file contains a hardcoded list of certificates for `sz24_3580.txt`. See `_TABLE` for all 1463 certificates.
+  * `sz24_2117.txt` is official, and all 1463 certificates were verified in Lean 4.36.0-rc1.
+  * Warning: The largest Lean files may use ~15 GB of memory to verify.
 
 Historical note: `graph_search.py` implements the Power Limit decider, but this decider is very weak and not worth preserving. `graph_search2.py` is the old name of `graph_plm.py`. `graph_search3.py` is the old name of `graph_pdlm.py`.
