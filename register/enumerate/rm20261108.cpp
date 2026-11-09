@@ -3,12 +3,12 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-const int LIM=7; // max sz to enumerate
+const int LIM=8; // max sz to enumerate
 //const optional<pair<int,int>> USE_RESULTS=nullopt;
 const optional<pair<int,int>> USE_RESULTS={{7,231}}; // use the fact that MBB(7) = 231 (TODO: improve the deciders so that MBB(7) has no holdouts)
 const bool EXPAND_HOLDOUT=1; // expand holdouts? (use 1 for completeness. use 0 if you're ok with halters making the holdouts list inaccurate)
 const int CHAMPION_CNT=100; // number of champions to print
-const bool CHAMPION_SORT=1; // 0 = sort by steps. 1 = sort by max register.
+const bool CHAMPION_SORT=0; // 0 = sort by steps. 1 = sort by max register.
 
 // instructions are numbered 1 (A), 2 (B), 3 (C), ...
 // instruction 0 represents undefined
