@@ -8,12 +8,14 @@ These commands will build and run the program.
 
 ```
 ./ac rm
+./ac rm20261108
 ```
 
-The program will write to 2 locations:
+The program will produce output here:
 
 * stderr will show information to help with debugging the enumerator.
 * The file `tmp.txt` contains the output of the enumeration. This file is intended to be studied further or shared.
+* The files `tmp_sz*_step.txt` (or `tmp_sz*_reg.txt`) contain the top champions for each size.
 
 ## Explanation of `rm`
 
