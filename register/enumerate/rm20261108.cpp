@@ -181,18 +181,22 @@ bool graph_plm(const program& prog,int maxreg,int lim) {
 vector<ll> cnt;
 vector<tuple<ll,vector<ll>,program>> champions; // {step count, registers, program}
 ll worst_champ=0;
+
+ll champion_score(const tuple<ll,vector<ll>,program>& t) {
+    if (!CHAMPION_SORT) return get<0>(t);
+    ll m=0;
+    for (ll i:get<1>(t)) m=max(m,i);
+    return m;
+}
+
 void reduce_champions() {
     stable_sort(champions.begin(),champions.end(),[](const tuple<ll,vector<ll>,program>& t1,const tuple<ll,vector<ll>,program>& t2) {
-        if (!CHAMPION_SORT) return get<0>(t1)>get<0>(t2);
-        ll m1=0,m2=0;
-        for (ll i:get<1>(t1)) m1=max(m1,i);
-        for (ll j:get<1>(t2)) m2=max(m2,j);
-        return m1>m2;
+        return champion_score(t1)>champion_score(t2);
     });
     if (champions.size()>CHAMPION_CNT) champions.resize(CHAMPION_CNT);
     // logs
-    if (worst_champ==get<0>(champions.back())) return;
-    worst_champ=get<0>(champions.back());
+    if (worst_champ==champion_score(champions.back())) return;
+    worst_champ=champion_score(champions.back());
     fprintf(stderr,"  CHAMPION 1 STEPS=%lld %s\n",
         get<0>(champions.front()),program_str(get<2>(champions.front())).c_str());
     fprintf(stderr,"  CHAMPION %d STEPS=%lld %s\n",champions.size(),
@@ -256,7 +260,7 @@ vector<program> solve(int sz_max,const program& prog) {
         steps++;
         if (USE_RESULTS && steps==USE_RESULTS->second+1 && prog.size()<=USE_RESULTS->first) return {}; // nonhalt
         if (s.first==0) { // halted
-            if (champions.size()<CHAMPION_CNT*2 || get<0>(champions.back())<=steps) {
+            if (champions.size()<CHAMPION_CNT || champion_score(champions[CHAMPION_CNT-1])<=champion_score({steps,s.second,prog})) {
                 champions.push_back({steps,s.second,prog});
                 if (champions.size()>=CHAMPION_CNT*2) reduce_champions();
             }
