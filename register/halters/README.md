@@ -2,7 +2,10 @@
 
 List of register machines that halted in the most number of steps (`sz*_step.txt`), or with the largest register (`sz*_reg.txt`). The format of each line is `<register machine> <steps to halt>: <registers>`
 
-I will update these files as better halters are found. Size 7 and below are unlikely to change.
+I will update these files as better halters are found.
+
+* Size 7 and below are unlikely to change. I will only change them if I fix a bug in the enumerator.
+* Size 8 is unlikely to change. The remaining holdouts are probviously nonhalting.
 
 ## Size 1
 
@@ -38,3 +41,8 @@ I will update these files as better halters are found. Size 7 and below are unli
 
 * `sz7_step.txt` (Nov 8, 2026).
 * `sz7_reg.txt` (Nov 8, 2026).
+
+## Size 8
+
+* `sz8_step.txt` (Nov 10, 2026).
+* `sz8_reg.txt` (Nov 10, 2026).

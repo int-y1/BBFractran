@@ -22,4 +22,4 @@ MBB(7) = 231.
 
 ## Size 8
 
-(not yet)
+* `sz8_2940547.zip` (Nov 10, 2026): Direct output from `rm20261108` using `USE_RESULTS={{7,231}}`.
