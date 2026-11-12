@@ -2,6 +2,9 @@
 import sys
 from decider.graph_plm import graph_plm
 from decider.graph_pdlm import graph_pdlm
+from decider.oned_progress import oned_progress
+from decider.nd_progress import nd_progress
+from decider.ndr_progress import ndr_progress
 from register.decider.utils import parse_file
 
 '''
@@ -15,6 +18,9 @@ def run_decider(F: list[list[int]]) -> str | None:
         result = graph_plm(F, EXP_LIM) if result is None else result
     for EXP_LIM in range(1, 13):
         result = graph_pdlm(F, EXP_LIM) if result is None else result
+    # result = oned_progress(F) if result is None else result
+    # result = nd_progress(F) if result is None else result
+    # result = ndr_progress(F) if result is None else result
     return result
 
 
