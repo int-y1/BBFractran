@@ -25,3 +25,4 @@ MBB(7) = 231.
 * `sz8_2940547.zip` (Nov 10, 2026): Direct output from `rm20261108` using `USE_RESULTS={{7,231}}`.
 * `sz8_11140.txt` (Nov 11, 2026): After applying the "Power Difference Limit Mod" decider. Only `GRAPH_PDLM(3)` and `GRAPH_PDLM(4)` were used. PDLM with higher limits didn't work.
 * `sz8_404.txt` (Nov 12, 2026): After applying the "1D Progress Certificates" decider. All 10736 certificates were verified in Lean 4.36.0-rc1.
+* `sz8_6.txt` (Nov 12, 2026): After applying the "N-Dimensional Progress Certificates" decider with a time budget of 300s. No machines exceeded the time budget. All 398 NDPC certificates were verified in Lean 4.36.0-rc1.

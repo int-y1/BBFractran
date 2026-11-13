@@ -6,4 +6,4 @@ For files that don't fit into any of the other directories.
 * `gen_lean_1dpc.py` generates Lean files for holdouts decided by 1DPC. There is a summary file and a file for each holdout.
 * `gen_lean_ndpc.py` generates Lean files for holdouts decided by NDPC. There is a summary file and a file for each holdout.
 * `gen_lean_sz24pc.py` generates Lean files for holdouts decided by a list of hardcoded size 24 certificates. There is a summary file and a file for each holdout.
-* `gen_lean_rm_1dpc.py` generates Lean files for register machine holdouts decided by 1DPC. There is a summary file and a file for each holdout.
+* `gen_lean_rm_pc.py` generates Lean files for register machine holdouts decided by a progress certificate decider. There is a summary file and a file for each holdout.
