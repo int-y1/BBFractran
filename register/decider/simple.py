@@ -26,7 +26,7 @@ def run_decider(F: list[list[int]]) -> str | None:
 
 if __name__ == '__main__':
     holdouts = parse_file('register/holdout/sz7_9831.txt')
-    # sys.stdout = open('register/decider/tmp_simple_sz6.txt', 'w')
+    # sys.stdout = open('register/decider/tmp_sz7_9831.txt', 'w')
     print(f'running simple.py on {len(holdouts)} holdouts')
     print()
 

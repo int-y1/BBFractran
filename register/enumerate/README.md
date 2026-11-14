@@ -9,6 +9,7 @@ These commands will build and run the program.
 ```
 ./ac rm
 ./ac rm20261108
+./ac rm20261113
 ```
 
 The program will produce output here:
@@ -20,3 +21,12 @@ The program will produce output here:
 ## Explanation of `rm`
 
 TODO: fill this in later.
+
+## Explanation of `rm20261108`
+
+* Get the top 100 champions.
+
+## Explanation of `rm20261113`
+
+* Add a PDLM decider.
+* Improve champion tiebreaking.
