@@ -10,6 +10,7 @@ These commands will build and run the program.
 ./ac rm
 ./ac rm20261108
 ./ac rm20261113
+./ac rm20261114
 ```
 
 The program will produce output here:
@@ -30,3 +31,7 @@ TODO: fill this in later.
 
 * Add a PDLM decider.
 * Improve champion tiebreaking.
+
+## Explanation of `rm20261114`
+
+* Add multithreading.
