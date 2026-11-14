@@ -245,7 +245,7 @@ bool graph_pdlm(const program& prog,int maxreg,int lim) {
 // returns programs that are worth exploring further
 vector<ll> cnt;
 vector<tuple<ll,vector<ll>,program>> champions; // {step count, registers, program}
-tuple<ll,ll,string> best_champ{0,0,""},worst_champ{0,0,""};
+tuple<ll,ll,string> best_champ{-1,-1,""},worst_champ{-1,-1,""};
 
 tuple<ll,ll,string> champion_score(const tuple<ll,vector<ll>,program>& t) {
     ll regsum=0,regmax=0;
@@ -258,6 +258,7 @@ tuple<ll,ll,string> champion_score(const tuple<ll,vector<ll>,program>& t) {
 }
 
 void reduce_champions() {
+    if (champions.empty()) return;
     stable_sort(champions.begin(),champions.end(),[](const tuple<ll,vector<ll>,program>& t1,const tuple<ll,vector<ll>,program>& t2) {
         return champion_score(t1)>champion_score(t2);
     });
@@ -336,7 +337,7 @@ vector<program> solve(int sz_max,const program& prog) {
                 for (int lim=5; lim<=8; lim++) assert(!graph_plm(prog,maxreg,lim));
                 for (int lim=3; lim<=6; lim++) assert(!graph_pdlm(prog,maxreg,lim));
             }
-            if (champions.size()<CHAMPION_CNT || champion_score(champions.at(CHAMPION_CNT-1))<=champion_score({steps,s.second,prog})) {
+            if (worst_champ<=champion_score({steps,s.second,prog})) {
                 champions.push_back({steps,s.second,prog});
                 if (champions.size()>=CHAMPION_CNT*2) reduce_champions();
             }
