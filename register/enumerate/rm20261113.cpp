@@ -245,7 +245,7 @@ bool graph_pdlm(const program& prog,int maxreg,int lim) {
 // returns programs that are worth exploring further
 vector<ll> cnt;
 vector<tuple<ll,vector<ll>,program>> champions; // {step count, registers, program}
-tuple<ll,ll,string> best_champ{-1,-1,""},worst_champ{-1,-1,""};
+tuple<ll,ll,string> best_champ,worst_champ;
 
 tuple<ll,ll,string> champion_score(const tuple<ll,vector<ll>,program>& t) {
     ll regsum=0,regmax=0;
@@ -397,6 +397,8 @@ int main() {
         printf("\n");
         cnt={}; for (int i=0; i<50; i++) cnt.push_back(0);
         champions.clear();
+        best_champ={-1,-1,""};
+        worst_champ={-1,-1,""};
         program v1{instruction_inc{0,0}};
         program v2{instruction_dec{0,0,0}};
         int t0=time(0);
