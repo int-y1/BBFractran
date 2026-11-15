@@ -26,3 +26,7 @@ MBB(7) = 231.
 * `sz8_11140.txt` (Nov 11, 2026): After applying the "Power Difference Limit Mod" decider. Only `GRAPH_PDLM(3)` and `GRAPH_PDLM(4)` were used. PDLM with higher limits didn't work.
 * `sz8_404.txt` (Nov 12, 2026): After applying the "1D Progress Certificates" decider. All 10736 certificates were verified in Lean 4.36.0-rc1.
 * `sz8_6.txt` (Nov 12, 2026): After applying the "N-Dimensional Progress Certificates" decider with a time budget of 300s. No machines exceeded the time budget. All 398 NDPC certificates were verified in Lean 4.36.0-rc1.
+
+## Size 9
+
+* `sz9_6953075.zip` (Nov 15, 2026): Direct output from `rm20261114` using `USE_RESULTS={{7,231}}` (~641 core-hours). Uncompressed size is 291421044 bytes. For reference, `rm20261114` produced `sz8_11140.txt` in ~8.54 core-hours.
