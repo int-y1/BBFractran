@@ -444,12 +444,21 @@ _CHUNK = 100
 _SEG = 32
 
 
-def _boot(F, W, steps, st):
+def _boot(F, W, steps, st, boot_rfl=False):
     """`c₀ [fm]⊢* <anchor>`.
 
     Emitted as `_CHUNK`-sized standalone theorems: `execute fm n` recurses once
     per step, and a single long run blows both `maxRecDepth` and the
-    per-declaration heartbeat budget."""
+    per-declaration heartbeat budget.
+
+    With `boot_rfl`, each chunk is proved by `⟨n, rfl⟩` instead of
+    `by execute fm n`: the chunk is a closed computation, so `stepNat fm n c = some c'`
+    holds by evaluation.  Same theorems, same chunk boundaries, only the proof
+    term differs.  `step`'s `unfold fm; simp only` gets very slow on wide
+    machines (many registers, mostly zero): on raw size-8 register machines the
+    first chunk exceeds the heartbeat limit for 16% of 13-register, 52% of
+    14-register and all 15-register machines, which `rfl` checks in well under
+    a second."""
     s = [1] + [0] * (W - 1)
     states = [tuple(s)]
     for _ in range(steps):
@@ -464,7 +473,7 @@ def _boot(F, W, steps, st):
         nxt = min(pos + _CHUNK, steps)
         dst = '⟨' + ', '.join(map(str, states[nxt])) + '⟩'
         nm = f'boot{len(thms)}'
-        run = f'by execute fm {nxt - pos}'
+        run = f'⟨{nxt - pos}, rfl⟩' if boot_rfl else f'by execute fm {nxt - pos}'
         # left-associated: every term stays shallow, and every chunk gets its
         # own `maxRecDepth` and heartbeat budget
         pf = f'({run})' if last is None else f'stepStar_trans {last} ({run})'
@@ -472,6 +481,15 @@ def _boot(F, W, steps, st):
         last, pos = nm, nxt
     term = last if last is not None else '(by exists 0)'
     return thms, [f'  exact stepStar_not_halts_not_halts (c₂ := ⟨{st}⟩) {term} key']
+
+
+def _call_boot(F, W, steps, st, boot_rfl):
+    """Call `_boot`, looked up at call time: `decider/sz24_progress.py` (`_fast_boot`)
+    temporarily replaces it with a 4-argument function, so the flag is only passed
+    when it is set and the default call is exactly the original one."""
+    if boot_rfl:
+        return _boot(F, W, steps, st, boot_rfl=True)
+    return _boot(F, W, steps, st)
 
 
 def _add_lit(expr, c):
@@ -713,7 +731,7 @@ def _plan_all(F, W, maxneed, cert, T):
 # per-flavour proof assembly
 # ============================================================================
 
-def _build_add(F, W, maxneed, cert, setup):
+def _build_add(F, W, maxneed, cert, setup, boot_rfl=False):
     """u -> u+1 additive family, anchored at the concrete member u = j.
 
     Writing j = M*T + r0, the canonical member is C(m) = f(M*m + j) and one
@@ -755,13 +773,13 @@ def _build_add(F, W, maxneed, cert, setup):
         f'    refine ⟨m+1, main_trans m {" ".join(["_"] * W)} '
         f'{" ".join(["?_"] * W)}⟩',
         '    all_goals ring']
-    bthms, blines = _boot(F, W, anchor[1], st)
+    bthms, blines = _call_boot(F, W, anchor[1], st, boot_rfl)
     parts += bthms
     parts.append('\n'.join(lines + blines))
     return em, parts
 
 
-def _build_mul(F, W, maxneed, cert, T, anchor):
+def _build_mul(F, W, maxneed, cert, T, anchor, boot_rfl=False):
     B, Mp = cert['B'], cert['M']
     plans = _plan_all(F, W, maxneed, cert, T)
     em = _Emitter(F, W, maxneed)
@@ -795,13 +813,13 @@ def _build_mul(F, W, maxneed, cert, T, anchor):
         lines.append(f'        exact trans{s} m {" ".join(["_"] * W)} '
                      + ' '.join(['(by ring)'] * W))
     lines.append(f'    · exact ⟨{anchor[3]}, {_or_term(anchor[4], Mp)}⟩')
-    bthms, blines = _boot(F, W, anchor[1], st)
+    bthms, blines = _call_boot(F, W, anchor[1], st, boot_rfl)
     parts += bthms
     parts.append('\n'.join(lines + blines))
     return em, parts
 
 
-def _build_tmpl(F, W, maxneed, cert, T, anchor):
+def _build_tmpl(F, W, maxneed, cert, T, anchor, boot_rfl=False):
     M, pc = cert['M'], cert['pc']
     base = M * T
     plans = _plan_all(F, W, maxneed, cert, T)
@@ -845,7 +863,7 @@ def _build_tmpl(F, W, maxneed, cert, T, anchor):
                      + ' '.join(['_'] * (2 * W)) + ' '
                      + ' '.join(['(by ring)'] * (2 * W)))
     lines.append(f'    · exact ⟨{anchor[0] - base}, rfl⟩')
-    bthms, blines = _boot(F, W, anchor[1], st)
+    bthms, blines = _call_boot(F, W, anchor[1], st, boot_rfl)
     parts += bthms
     parts.append('\n'.join(lines + blines))
     return em, parts
@@ -856,12 +874,14 @@ def _build_tmpl(F, W, maxneed, cert, T, anchor):
 # ============================================================================
 
 def oned_progress_to_lean(F: list[list[int]], cert: dict, name: str = 'Foo',
-                          max_boot: int | None = None) -> str:
+                          max_boot: int | None = None, *, boot_rfl: bool = False) -> str:
     """Translate a `oned_progress` certificate for `F` into a Lean 4 file.
 
     `name` is used both as the module name and as the namespace, so the result
     belongs in `<name>.lean`.  `max_boot`, if given, rejects bootstraps longer
-    than that many steps.  Raises `TranslationError` on failure."""
+    than that many steps.  `boot_rfl` proves each bootstrap chunk by `⟨n, rfl⟩`
+    instead of `by execute fm n` (see `_boot`); it is off by default, so the
+    default output is unchanged.  Raises `TranslationError` on failure."""
     if cert is None:
         raise TranslationError('no certificate')
     _check_ident(name)
@@ -874,11 +894,11 @@ def oned_progress_to_lean(F: list[list[int]], cert: dict, name: str = 'Foo',
     for setup in _setups(cert, max_boot):
         try:
             if flavour == 'add':
-                em, parts = _build_add(F, W, maxneed, cert, setup)
+                em, parts = _build_add(F, W, maxneed, cert, setup, boot_rfl)
             elif flavour == 'mul':
-                em, parts = _build_mul(F, W, maxneed, cert, *setup)
+                em, parts = _build_mul(F, W, maxneed, cert, *setup, boot_rfl)
             else:
-                em, parts = _build_tmpl(F, W, maxneed, cert, *setup)
+                em, parts = _build_tmpl(F, W, maxneed, cert, *setup, boot_rfl)
         except _Fail:
             continue
         return _assemble(F, W, name, cert, setup, em, parts)

@@ -30,3 +30,4 @@ MBB(7) = 231.
 ## Size 9
 
 * `sz9_6953075.zip` (Nov 15, 2026): Direct output from `rm20261114` using `USE_RESULTS={{7,231}}` (~641 core-hours). Uncompressed size is 291421044 bytes. For reference, `rm20261114` produced `sz8_11140.txt` in ~8.54 core-hours.
+* `sz9_247899.zip` (Nov 20, 2026): After applying the "1D Progress Certificates" decider with `boot_rfl=True`. Uncompressed size is 10374471 bytes. All 6705176 1DPC certificates were verified in Lean 4.36.0-rc1. Certificate generation took ~461 core-hours, certificate verification took ~6550 core-hours, and the worst certificate used 1.92 GiB of RAM.

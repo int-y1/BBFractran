@@ -12,12 +12,12 @@ if 0:
     holdouts_before = parse_file(f'register/holdout/sz8_11140.txt')
     holdouts_after = parse_file(f'register/holdout/sz8_404.txt')
     progress_cert = oned_progress_cert
-    progress_to_lean = oned_progress_to_lean
+    progress_to_lean = lambda F, cert, name: oned_progress_to_lean(F, cert, name, boot_rfl=True)
 if 1:
     holdouts_before = parse_file(f'register/holdout/sz8_404.txt')
     holdouts_after = parse_file(f'register/holdout/sz8_6.txt')
     progress_cert = lambda F: nd_progress_cert(F, time_budget=0)
-    progress_to_lean = nd_progress_to_lean
+    progress_to_lean = lambda F, cert, name: nd_progress_to_lean(F, cert, name, boot_rfl=True)
 
 holdout_directory = 'Size8RM_pc'
 holdout_file = f'Sz8RM_{len(holdouts_before) - len(holdouts_after)}'  # mock filename, doesn't really exist

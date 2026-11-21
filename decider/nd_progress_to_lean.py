@@ -1606,7 +1606,8 @@ _MACHINE_OPTIONS = {
 def nd_progress_to_lean(F: list[list[int]], cert: dict, name: str = 'Foo',
                         max_heartbeats: int | None = None,
                         enumerate_empty: bool | None = None,
-                        lattice_hints: bool | None = None) -> str:
+                        lattice_hints: bool | None = None, *,
+                        boot_rfl: bool = False) -> str:
     """Translate an `nd_progress_cert` certificate for `F` into a Lean 4 file.
 
     `name` is used both as the module name and as the namespace, so the result
@@ -1617,7 +1618,11 @@ def nd_progress_to_lean(F: list[list[int]], cert: dict, name: str = 'Foo',
     bounded parameters instead of a bare `omega` (see `_enumerate_empty`).
     `lattice_hints` hands each run on a 1-dimensional lattice region its
     parametrization (see `_Leaf.lattice`).  Both are off unless given, or unless
-    `_MACHINE_OPTIONS` lists them for F.  Raises `TranslationError` on failure."""
+    `_MACHINE_OPTIONS` lists them for F.  `boot_rfl=True` proves each concrete
+    bootstrap chunk by `⟨n, rfl⟩` instead of `by execute fm n` (see
+    `oned_progress_to_lean._boot`); `execute` gets very slow on wide FMs (e.g.
+    register machines, 12-15 registers).  It is off by default, so the output is
+    unchanged unless asked for.  Raises `TranslationError` on failure."""
     known = _MACHINE_OPTIONS.get(unparse_line(F), {})
     if enumerate_empty is None:
         enumerate_empty = known.get('enumerate_empty', False)
@@ -1658,7 +1663,12 @@ def nd_progress_to_lean(F: list[list[int]], cert: dict, name: str = 'Foo',
     parts.append(_progress(cx))
     st = ', '.join(map(str, boot))
     try:
-        bthms, blines = _boot(F, W, cert['boot_t'], st)
+        # `_boot` is looked up at call time (`decider/sz24_progress.py` replaces it with a
+        # 4-argument function), so the flag is only passed when it is set
+        if boot_rfl:
+            bthms, blines = _boot(F, W, cert['boot_t'], st, boot_rfl=True)
+        else:
+            bthms, blines = _boot(F, W, cert['boot_t'], st)
     except _Fail:
         raise TranslationError('bootstrap does not reach the anchor') from None
     parts += bthms
